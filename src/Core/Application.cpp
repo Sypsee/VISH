@@ -1,6 +1,9 @@
 #include <glad/glad.h>
 #include "Application.h"
 #include <iostream>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 void Application::mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
@@ -51,17 +54,25 @@ Application::Application()
 	glfwSetCursorPosCallback(m_Window.getGLFWwindow(), mouse_callback);
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-    //glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-	//glEnable(GL_BLEND);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
+	glDepthFunc(GL_GREATER);
+    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+	glEnable(GL_BLEND);
 	glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(message_callback, nullptr);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(m_Window.getGLFWwindow(), true);
+	ImGui_ImplOpenGL3_Init("#version 460");
 }
 
 Application::~Application()
 {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void Application::run()
@@ -89,9 +100,28 @@ void Application::run()
 		cam.update(m_Window.getGLFWwindow());
 
 		glClearColor(0.05, 0.1, 0.15, 1.0);
+		glClearDepth(0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		cube.Draw({cam.getProjMatrix(), cam.getViewMatrix()});
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		cube.Draw({cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), light});
+
+		ImGui::Begin("Cube!");
+		ImGui::DragFloat3("Position", glm::value_ptr(cube.transform.pos), 0.3f);
+		ImGui::DragFloat3("Rotation", glm::value_ptr(cube.transform.rot), 0.3f);
+		ImGui::DragFloat3("Scale", glm::value_ptr(cube.transform.scale), 0.3f);
+		ImGui::End();
+
+		ImGui::Begin("Light!");
+		ImGui::DragFloat3("Position", glm::value_ptr(light.pos));
+		ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(m_Window.getGLFWwindow());
 	}

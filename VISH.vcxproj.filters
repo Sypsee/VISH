@@ -33,12 +33,10 @@
     <ClInclude Include="src\OpenGL\Shader.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\OpenGL\Texture.h">
-      <Filter>OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="src\OpenGL\VertexArray.h" />
     <ClInclude Include="src\Game\Objects\Mesh.h" />
     <ClInclude Include="src\Game\Objects\Cube.h" />
+    <ClInclude Include="src\Game\Objects\ObjectInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Application.cpp">
@@ -57,9 +55,6 @@
       <Filter>OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\OpenGL\Shader.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\OpenGL\Texture.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\glad.c" />

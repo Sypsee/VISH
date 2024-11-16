@@ -3,3 +3,10 @@
 build/
 captures/
 .vs/
+obj/
+
+*.sln
+*.vcxproj
+*.filters
+*.user
+*.ini

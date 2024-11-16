@@ -92,10 +92,10 @@
     <ClInclude Include="src\Game\Camera.h" />
     <ClInclude Include="src\Game\Objects\Cube.h" />
     <ClInclude Include="src\Game\Objects\Mesh.h" />
+    <ClInclude Include="src\Game\Objects\ObjectInfo.h" />
     <ClInclude Include="src\OpenGL\Buffer.h" />
     <ClInclude Include="src\OpenGL\Framebuffer.h" />
     <ClInclude Include="src\OpenGL\Shader.h" />
-    <ClInclude Include="src\OpenGL\Texture.h" />
     <ClInclude Include="src\OpenGL\VertexArray.h" />
   </ItemGroup>
   <ItemGroup>
@@ -107,7 +107,6 @@
     <ClCompile Include="src\OpenGL\Buffer.cpp" />
     <ClCompile Include="src\OpenGL\Framebuffer.cpp" />
     <ClCompile Include="src\OpenGL\Shader.cpp" />
-    <ClCompile Include="src\OpenGL\Texture.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\imgui\imgui.cpp" />
     <ClCompile Include="src\imgui\imgui_demo.cpp" />
