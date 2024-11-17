@@ -1,13 +1,20 @@
 #include "Cube.h"
+#include <array>
 
-Cube::Cube()
+Cube::Cube(CreateInfo const& createInfo)
 {
-	VertexArray::AttribInfo positionAttrib{ sizeof(float) * 3, GL_FLOAT, 0, sizeof(float) * 6, 0 };
-	VertexArray::AttribInfo normalAttrib{ sizeof(float) * 3, GL_FLOAT, sizeof(float) * 3, sizeof(float) * 6, 1};
-	VertexArray::AttribInfo attribs[] = { positionAttrib, normalAttrib };
+	VertexArray::AttribInfo positionAttrib{ sizeof(float) * 3, GL_FLOAT, 0, 0 };
+	VertexArray::AttribInfo normalAttrib{ sizeof(float) * 3, GL_FLOAT, sizeof(float) * 3, 1 };
+	VertexArray::AttribInfo uvAttrib{ sizeof(float) * 2, GL_FLOAT, sizeof(float) * 6, 2 };
+
+	std::array<VertexArray::AttribInfo, 3> attribs = {
+		positionAttrib,
+		normalAttrib,
+		uvAttrib
+	};
 	VertexArray::BufferInfo vertexBufferInfo
 	{
-		m_VertexBuffer, 0, sizeof(float) * 6, 0, std::span<VertexArray::AttribInfo>(attribs, 1)
+		m_VertexBuffer, 0, sizeof(float) * 8, 0, attribs
 	};
 	VertexArray::BufferInfo vertexBuffers[] = { vertexBufferInfo };
 	VertexArray::CreateInfo vaCreateInfo
@@ -21,8 +28,15 @@ Cube::Cube()
 	};
 	m_Mesh = Mesh(meshCreateInfo);
 
+	if (createInfo.texture.getHandle() != 69)
+	{
+		m_Texture = std::move(createInfo.texture);
+	}
+
 	m_Shader.AttachShader({ "res/shaders/cube.vert", GL_VERTEX_SHADER });
 	m_Shader.AttachShader({ "res/shaders/cube.frag", GL_FRAGMENT_SHADER });
+
+	m_Shader.setI("u_Tex", 0);
 }
 
 void Cube::Draw(DrawInfo drawInfo)
@@ -43,6 +57,11 @@ void Cube::Draw(DrawInfo drawInfo)
 
 	m_Shader.setVec3("lightPos", drawInfo.light.pos);
 	m_Shader.setVec3("lightColor", drawInfo.light.color);
+
+	if (m_Texture.getHandle() != 69)
+	{
+		m_Texture.bind();
+	}
 
 	m_Mesh.Draw(36);
 }

@@ -9,11 +9,10 @@ class VertexArray final
 public:
 	struct AttribInfo final
 	{
-		const size_t atSize = 0;
-		const GLenum atType = GL_FLOAT;
-		const uint8_t offset = 0;
-		const uint8_t stride = 0;
-		const uint8_t layoutIndex = 0;
+		size_t atSize = 0;
+		GLenum atType = GL_FLOAT;
+		int offset = 0;
+		int layoutIndex = 0;
 	};
 
 	struct BufferInfo final
@@ -22,7 +21,7 @@ public:
 		const uint8_t offset = 0;
 		const uint8_t stride = 0;
 		const uint8_t bindingIndex = 0;
-		std::span<const AttribInfo> attribInfo;
+		std::span<AttribInfo> attribInfo;
 	};
 
 	struct CreateInfo final

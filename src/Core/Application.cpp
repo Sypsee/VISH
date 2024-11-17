@@ -99,7 +99,7 @@ void Application::run()
 
 		cam.update(m_Window.getGLFWwindow());
 
-		glClearColor(0.05, 0.1, 0.15, 1.0);
+		glClearColor(0.53, 0.8, 0.92, 1.0);
 		glClearDepth(0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

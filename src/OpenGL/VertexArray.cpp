@@ -1,4 +1,5 @@
 #include "VertexArray.h"
+#include <iostream>
 
 VertexArray::VertexArray(CreateInfo const& createInfo)
 {
@@ -9,14 +10,14 @@ VertexArray::VertexArray(CreateInfo const& createInfo)
 		const BufferInfo& bufferInfo = createInfo.buffers[i];
 		
 		glVertexArrayVertexBuffer(m_Handle, i, bufferInfo.buffer.getHandle(), bufferInfo.offset, bufferInfo.stride);
-		glVertexArrayAttribBinding(m_Handle, i, bufferInfo.bindingIndex);
 
 		for (int j = 0; j < bufferInfo.attribInfo.size(); j++)
 		{
 			const AttribInfo& attribInfo = createInfo.buffers[i].attribInfo[j];
 
-			glEnableVertexArrayAttrib(m_Handle, j);
-			glVertexArrayAttribFormat(m_Handle, j, attribInfo.atSize, attribInfo.atType, GL_FALSE, attribInfo.offset);
+			glVertexArrayAttribBinding(m_Handle, attribInfo.layoutIndex, bufferInfo.bindingIndex);
+			glEnableVertexArrayAttrib(m_Handle, attribInfo.layoutIndex);
+			glVertexArrayAttribFormat(m_Handle, attribInfo.layoutIndex, attribInfo.atSize, attribInfo.atType, GL_FALSE, attribInfo.offset);
 		}
 	}
 

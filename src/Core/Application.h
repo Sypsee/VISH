@@ -24,6 +24,6 @@ private:
 
 	Window m_Window{ "VISH", START_WIDTH, START_HEIGHT };
 	inline static Camera cam{glm::vec3(0, 0, 0)};
-	Cube cube;
+	Cube cube{ {Texture{{"res/textures/test.png"}}} };
 	Light light;
 };

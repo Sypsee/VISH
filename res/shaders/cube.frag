@@ -3,12 +3,15 @@
 out vec4 FragColor;
 
 in vec3 normal;
+in vec2 uv;
 in vec3 fragPos;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 
 uniform vec3 viewPos;
+
+uniform sampler2D u_Tex;
 
 const float ambient = 0.1;
 const float specularStrength = 1.0;
@@ -17,6 +20,8 @@ const float alpha = 8;
 void main()
 {
     vec3 base_color = vec3(0.3, 0.5, 1.0);
+    base_color = texture(u_Tex, uv).rgb;
+
     vec3 norm = normalize(normal);
     vec3 lightDir = normalize(lightPos - fragPos);
     vec3 viewDir = normalize(viewPos - fragPos);
