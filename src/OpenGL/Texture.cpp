@@ -5,6 +5,8 @@
 
 Texture::Texture(CreateInfo const& createInfo)
 {
+	if (createInfo.path == NULL) return;
+
 	stbi_set_flip_vertically_on_load(true);
 
 	int width, height, nrChannels;

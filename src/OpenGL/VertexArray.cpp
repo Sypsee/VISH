@@ -15,8 +15,8 @@ VertexArray::VertexArray(CreateInfo const& createInfo)
 		{
 			const AttribInfo& attribInfo = createInfo.buffers[i].attribInfo[j];
 
-			glVertexArrayAttribBinding(m_Handle, attribInfo.layoutIndex, bufferInfo.bindingIndex);
 			glEnableVertexArrayAttrib(m_Handle, attribInfo.layoutIndex);
+			glVertexArrayAttribBinding(m_Handle, attribInfo.layoutIndex, bufferInfo.bindingIndex);
 			glVertexArrayAttribFormat(m_Handle, attribInfo.layoutIndex, attribInfo.atSize, attribInfo.atType, GL_FALSE, attribInfo.offset);
 		}
 	}

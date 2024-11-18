@@ -3,9 +3,9 @@
 
 Cube::Cube(CreateInfo const& createInfo)
 {
-	VertexArray::AttribInfo positionAttrib{ sizeof(float) * 3, GL_FLOAT, 0, 0 };
-	VertexArray::AttribInfo normalAttrib{ sizeof(float) * 3, GL_FLOAT, sizeof(float) * 3, 1 };
-	VertexArray::AttribInfo uvAttrib{ sizeof(float) * 2, GL_FLOAT, sizeof(float) * 6, 2 };
+	VertexArray::AttribInfo positionAttrib{ 3, GL_FLOAT, 0, 0 };
+	VertexArray::AttribInfo normalAttrib{ 3, GL_FLOAT, sizeof(float) * 3, 1 };
+	VertexArray::AttribInfo uvAttrib{ 2, GL_FLOAT, sizeof(float) * 6, 2 };
 
 	std::array<VertexArray::AttribInfo, 3> attribs = {
 		positionAttrib,
@@ -28,13 +28,13 @@ Cube::Cube(CreateInfo const& createInfo)
 	};
 	m_Mesh = Mesh(meshCreateInfo);
 
+	m_Shader.AttachShader({ "res/shaders/cube.vert", GL_VERTEX_SHADER });
+	m_Shader.AttachShader({ "res/shaders/cube.frag", GL_FRAGMENT_SHADER });
+
 	if (createInfo.texture.getHandle() != 69)
 	{
 		m_Texture = std::move(createInfo.texture);
 	}
-
-	m_Shader.AttachShader({ "res/shaders/cube.vert", GL_VERTEX_SHADER });
-	m_Shader.AttachShader({ "res/shaders/cube.frag", GL_FRAGMENT_SHADER });
 
 	m_Shader.setI("u_Tex", 0);
 }
@@ -61,6 +61,11 @@ void Cube::Draw(DrawInfo drawInfo)
 	if (m_Texture.getHandle() != 69)
 	{
 		m_Texture.bind();
+		m_Shader.setI("u_HasTex", true);
+	}
+	else
+	{
+		m_Shader.setI("u_HasTex", false);
 	}
 
 	m_Mesh.Draw(36);
