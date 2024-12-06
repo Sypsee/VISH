@@ -29,12 +29,14 @@ Model::Model(std::filesystem::path path)
 	}
 
 	m_Meshes.resize(asset->meshes.size());
+	int i = 0;
 	for (auto& mesh : asset->meshes)
 	{
-		if (!loadMesh(asset.get(), mesh))
+		if (!loadMesh(asset.get(), mesh, i))
 		{
 			std::cerr << "Failed to load mesh!\n";
 		}
+		i++;
 	}
 
 	m_Shader.AttachShader({ "res/shaders/lit.vert", GL_VERTEX_SHADER });
@@ -46,10 +48,8 @@ Model::~Model()
 	m_Meshes.clear();
 }
 
-bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh)
+bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 {
-	int i = 0;
-	
 	for (auto it = mesh.primitives.begin(); it != mesh.primitives.end(); ++it)
 	{
 		std::vector<Vertex> vertices;
@@ -98,8 +98,28 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh)
 			});
 		}
 
-		m_Meshes[i].vertexCount = vertices.size();
+		auto& indexAccessor = asset.accessors[it->indicesAccessor.value()];
 
+		GLenum indexType = GL_NONE;
+		if (indexAccessor.componentType == fastgltf::ComponentType::UnsignedByte || indexAccessor.componentType == fastgltf::ComponentType::UnsignedShort)
+		{
+			indexType = GL_UNSIGNED_SHORT;
+			std::vector<uint16_t> indices;
+			indices.resize(indexAccessor.count);
+			fastgltf::copyFromAccessor<std::uint16_t>(asset, indexAccessor, indices.data());
+			m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint16_t));
+		}
+		else
+		{
+			indexType = GL_UNSIGNED_INT;
+			std::vector<uint32_t> indices;
+			indices.resize(indexAccessor.count);
+			fastgltf::copyFromAccessor<std::uint32_t>(asset, indexAccessor, indices.data());
+			m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint32_t));
+		}
+
+		m_Meshes[i].vertexCount = vertices.size();
+		
 		m_Meshes[i].vertexBuffer.UploadData(&vertices[0], vertices.size() * sizeof(Vertex));
 		VertexArray::AttribInfo positionAttrib{ 3, GL_FLOAT, 0, 0 };
 		VertexArray::AttribInfo uvAttrib{ 2, GL_FLOAT, 3 * sizeof(float), 2 };
@@ -114,16 +134,15 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh)
 		VertexArray::BufferInfo vertexBuffers[] = { vertexBufferInfo };
 		VertexArray::CreateInfo vaCreateInfo
 		{
-			std::span<VertexArray::BufferInfo>(vertexBuffers, 1), false, {{}}
+			std::span<VertexArray::BufferInfo>(vertexBuffers, 1), true, m_Meshes[i].indexBuffer
 		};
 		VertexArray va{ vaCreateInfo };
+
 		Mesh::CreateInfo meshCreateInfo
 		{
-			std::move(va)
+			std::move(va), indexType
 		};
 		m_Meshes[i].mesh = Mesh(meshCreateInfo);
-
-		i++;
 	}
 
 	return true;

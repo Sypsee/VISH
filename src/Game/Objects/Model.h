@@ -22,6 +22,7 @@ struct ModelMesh
 {
 	uint32_t vertexCount = 0;
 	Buffer vertexBuffer{ {GL_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
+	Buffer indexBuffer{ {GL_ELEMENT_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
 	Mesh mesh{};
 };
 
@@ -43,7 +44,7 @@ public:
 	void Draw(DrawInfo drawInfo);
 
 private:
-	bool loadMesh(fastgltf::Asset& asset, fastgltf::Mesh& mesh);
+	bool loadMesh(fastgltf::Asset& asset, fastgltf::Mesh& mesh, const int i);
 	bool loadImage(fastgltf::Asset& asset, fastgltf::Image& image);
 
 	std::vector<ModelMesh> m_Meshes;
