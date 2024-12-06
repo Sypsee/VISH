@@ -28,7 +28,7 @@ public:
 	Transform transform;
 
 private:
-	const float m_CubeVertices[36 * 8] = {
+	const float m_Vertices[36 * 8] = {
 		// Front face
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f,
@@ -78,7 +78,7 @@ private:
 		 -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	Buffer m_VertexBuffer{{GL_ARRAY_BUFFER, m_CubeVertices, sizeof(m_CubeVertices), GL_STATIC_DRAW}};
+	Buffer m_VertexBuffer{{GL_ARRAY_BUFFER, m_Vertices, sizeof(m_Vertices), GL_STATIC_DRAW}};
 
 	Texture m_Texture;
 	Shader m_Shader;

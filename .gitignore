@@ -4,6 +4,7 @@ build/
 captures/
 .vs/
 obj/
+res/models/
 
 *.sln
 *.vcxproj

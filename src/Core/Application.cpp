@@ -1,4 +1,3 @@
-#include <glad/glad.h>
 #include "Application.h"
 #include <iostream>
 #include <imgui/imgui.h>
@@ -99,26 +98,15 @@ void Application::run()
 
 		cam.update(m_Window.getGLFWwindow());
 
-		glClearColor(0.6, 0.9, 1.0, 1.0);
-		glClearDepth(0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		cube.Draw({cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), light});
+		glClearColor(0.6, 0.9, 1.0, 1.0);
+		glClearDepth(0.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		ImGui::Begin("Cube!");
-		ImGui::DragFloat3("Position", glm::value_ptr(cube.transform.pos), 0.3f);
-		ImGui::DragFloat3("Rotation", glm::value_ptr(cube.transform.rot), 0.3f);
-		ImGui::DragFloat3("Scale", glm::value_ptr(cube.transform.scale), 0.3f);
-		ImGui::End();
-
-		ImGui::Begin("Light!");
-		ImGui::DragFloat3("Position", glm::value_ptr(light.pos));
-		ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
-		ImGui::End();
+		model.Draw({cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), light});
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

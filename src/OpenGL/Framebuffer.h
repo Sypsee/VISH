@@ -40,6 +40,9 @@ public:
 
     void changeRes(const int width, const int height, const int i);
 
+	inline unsigned int getTexHandle(const int i) const { return m_TexIDs[i]; }
+	inline unsigned int getDepthTexHandle(const int i) const { return m_DepthTexIDs[i]; }
+
 private:
     void createTextureChain(unsigned int &texId, const bool recreate=false, const GLenum attachment=GL_COLOR_ATTACHMENT0);
     void createDepthTexture(unsigned int &depthTexID, const bool recreate=false);

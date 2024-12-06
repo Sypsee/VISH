@@ -1,8 +1,12 @@
 #pragma once
 
-#include "../Game/Objects/Cube.h"
+#include <glad/glad.h>
 #include "../Game/Camera.h"
+#include "../Opengl/Framebuffer.h"
+#include "../Game/Objects/Model.h"
 #include "Window.h"
+
+#include <array>
 
 class Application
 {
@@ -24,6 +28,7 @@ private:
 
 	Window m_Window{ "VISH", START_WIDTH, START_HEIGHT };
 	inline static Camera cam{glm::vec3(0, 0, 0)};
-	Cube cube{ {Texture{{"res/textures/test.png"}}}};
 	Light light;
+	
+	Model model{ std::filesystem::path("res/models/berserk-gutsver2/scene.gltf") };
 };

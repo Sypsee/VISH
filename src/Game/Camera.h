@@ -6,7 +6,7 @@
 class Camera
 {
 public:
-	Camera(glm::vec3 camPos=glm::vec3(0.f,0.f,3.f), float FOV = 50.f, float nearClip = 0.1f, float farClip = 10000.f);
+	Camera(glm::vec3 camPos=glm::vec3(0.f,0.f,3.f), float FOV = 50.f, float nearClip = 0.1f, float farClip = 500.f);
 
 	void update(GLFWwindow* window);
 	void mouse_callback(double xpos, double ypos);

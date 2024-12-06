@@ -8,15 +8,15 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
 
     for (int i = 0; i < createInfo.attachements.size(); i++)
     {
+		currentSizeX = createInfo.attachements[i].width;
+		currentSizeY = createInfo.attachements[i].height;
+		screenWidth = currentSizeX;
+		screenHeight = currentSizeY;
+		downScaleLevel = createInfo.attachements[i].mipSizeDownscale;
+		chainDepth = createInfo.attachements[i].chainDepth;
+
         if (GL_COLOR_ATTACHMENT0 <= createInfo.attachements[i].attachement && createInfo.attachements[i].attachement <= GL_COLOR_ATTACHMENT31)
         {
-            currentSizeX = createInfo.attachements[i].width;
-            currentSizeY = createInfo.attachements[i].height;
-            screenWidth = currentSizeX;
-            screenHeight = currentSizeY;
-            downScaleLevel = createInfo.attachements[i].mipSizeDownscale;
-            chainDepth = createInfo.attachements[i].chainDepth;
-
             unsigned int m_Handle = 0;
             glCreateTextures(GL_TEXTURE_2D, 1, &m_Handle);
             glBindTextureUnit(0, m_Handle);
@@ -27,12 +27,15 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
             m_TexIDs.push_back(m_Handle);
             glNamedFramebufferTexture(m_FboID, createInfo.attachements[i].attachement, m_TexIDs.back(), 0);
             
-            unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
+            unsigned int attachments[1] = { createInfo.attachements[i].attachement };
             glDrawBuffers(1, attachments);
         }
 
         if (createInfo.attachements[i].attachement == GL_DEPTH_ATTACHMENT)
         {
+			glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+
             unsigned int m_Handle = 0;
             glCreateTextures(GL_TEXTURE_2D, 1, &m_Handle);
             glBindTextureUnit(1, m_Handle);
@@ -50,7 +53,7 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
         std::cerr << "Failed to create framebuffer!\n";
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    this->unbind();
 }
 
 Framebuffer::~Framebuffer() noexcept

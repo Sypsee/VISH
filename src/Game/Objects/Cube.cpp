@@ -28,15 +28,14 @@ Cube::Cube(CreateInfo const& createInfo)
 	};
 	m_Mesh = Mesh(meshCreateInfo);
 
-	m_Shader.AttachShader({ "res/shaders/cube.vert", GL_VERTEX_SHADER });
-	m_Shader.AttachShader({ "res/shaders/cube.frag", GL_FRAGMENT_SHADER });
+	m_Shader.AttachShader({ "res/shaders/lit.vert", GL_VERTEX_SHADER });
+	m_Shader.AttachShader({ "res/shaders/lit.frag", GL_FRAGMENT_SHADER });
 
 	if (createInfo.texture.getHandle() != 69)
 	{
 		m_Texture = std::move(createInfo.texture);
+		m_Shader.setI("u_Tex", 0);
 	}
-
-	m_Shader.setI("u_Tex", 0);
 }
 
 void Cube::Draw(DrawInfo drawInfo)
