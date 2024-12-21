@@ -22,13 +22,18 @@ public:
 	Buffer& operator=(Buffer&& other) noexcept
 	{
 		std::swap(m_BufferID, other.m_BufferID);
+		m_Target = other.m_Target;
+		m_Usage = other.m_Usage;
 		return *this;
 	}
-	inline Buffer(Buffer&& other) noexcept { *this = std::move(other); }
+	inline Buffer(Buffer&& other) noexcept
+	{
+		*this = std::move(other);
+	}
 	~Buffer() noexcept;
 
-	void UploadData(const void* data, size_t size);
-	void Destroy();
+	void UploadData(const void* data, size_t size) const;
+	void Destroy() const;
 	void Bind() const;
 	void UnBind() const;
 

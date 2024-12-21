@@ -6,8 +6,16 @@ in vec3 normal;
 in vec2 uv;
 in vec3 fragPos;
 
-uniform vec3 lightPos;
-uniform vec3 lightColor;
+#define MAX_LIGHTS 10
+
+struct Light
+{
+    vec3 pos;
+    vec3 color;
+};
+
+uniform Light[MAX_LIGHTS] u_Lights;
+uniform int u_LightsSize;
 uniform vec3 viewPos;
 uniform bool u_HasTex;
 uniform sampler2D u_Tex;
@@ -50,16 +58,23 @@ const vec3 reflectance = vec3(0.1);
 
 void main()
 {
-    vec3 albedo = u_HasTex ? texture(u_Tex, uv).rgb : vec3(0.6, 0.2, 0.4);
+    vec3 albedo = u_HasTex ? texture(u_Tex, uv).rgb : vec3(1.0, 0.0, 0.0);
 
     vec3 norm = normalize(normal);
-    vec3 lightDir = normalize(lightPos - fragPos);
     vec3 viewDir = normalize(viewPos - fragPos);
+    
+    vec3 color = vec3(0.0);
+    float attenuation = 1.0;
+    for (int i = 0; i < u_LightsSize; i++)
+    {
+        vec3 lightDir = normalize(u_Lights[i].pos - fragPos);
 
-    float lightFragDistance = distance(lightPos, fragPos);
-    float attenuation = 1/(lightFragDistance * lightFragDistance);
-    vec3 brdf = brdf(lightDir, viewDir, roughness, norm, albedo, metallic, reflectance);
-    vec3 color = albedo * ambient + brdf * lightColor;
+        float lightFragDistance = distance(u_Lights[i].pos, fragPos);
+        attenuation = 1/(lightFragDistance);
+        vec3 brdf = brdf(lightDir, viewDir, roughness, norm, albedo, metallic, reflectance);
+        color += albedo * ambient + brdf * u_Lights[i].color;
+    }
+
     color *= max(attenuation, ambient);
     color *= 2.0;   // BRIGHTER IMAGE!
 

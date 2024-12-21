@@ -4,6 +4,7 @@
 #include "../Game/Camera.h"
 #include "../Opengl/Framebuffer.h"
 #include "../Game/Objects/Model.h"
+#include "../Game/Composite.h"
 #include "Window.h"
 
 #include <array>
@@ -28,7 +29,10 @@ private:
 
 	Window m_Window{ "VISH", START_WIDTH, START_HEIGHT };
 	inline static Camera cam{glm::vec3(0, 0, 0)};
-	Light light;
+	std::vector<Light> lights;
 	
-	Model model{ std::filesystem::path("res/models/berserk-gutsver2/scene.gltf") };
+	Model model{ std::filesystem::path("res/models/duck/duck.gltf") };
+
+	Framebuffer *m_FB;
+	Composite* comp;
 };

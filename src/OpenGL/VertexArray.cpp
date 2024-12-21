@@ -32,7 +32,7 @@ VertexArray::~VertexArray() noexcept
 	Destroy();
 }
 
-void VertexArray::Destroy()
+void VertexArray::Destroy() const
 {
 	if (!m_Handle) return;
 

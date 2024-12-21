@@ -41,11 +41,13 @@ Model::Model(std::filesystem::path path)
 
 	m_Shader.AttachShader({ "res/shaders/lit.vert", GL_VERTEX_SHADER });
 	m_Shader.AttachShader({ "res/shaders/lit.frag", GL_FRAGMENT_SHADER });
+	m_Shader.setI("u_HasTex", false);
 }
 
 Model::~Model()
 {
 	m_Meshes.clear();
+	m_Textures.clear();
 }
 
 bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
@@ -73,6 +75,8 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 				auto& texture = asset.textures[baseColorTexture->textureIndex];
 				if (!texture.imageIndex.has_value())
 					return false;
+
+				m_Meshes[i].albedoTextureIndex = texture.imageIndex.value();
 				
 				if (baseColorTexture->transform && baseColorTexture->transform->texCoordIndex.has_value())
 				{
@@ -108,6 +112,8 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 			indices.resize(indexAccessor.count);
 			fastgltf::copyFromAccessor<std::uint16_t>(asset, indexAccessor, indices.data());
 			m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint16_t));
+
+			m_Meshes[i].indexCount = indices.size();
 		}
 		else
 		{
@@ -116,9 +122,10 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 			indices.resize(indexAccessor.count);
 			fastgltf::copyFromAccessor<std::uint32_t>(asset, indexAccessor, indices.data());
 			m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint32_t));
-		}
 
-		m_Meshes[i].vertexCount = vertices.size();
+			m_Meshes[i].indexCount = indices.size();
+			indices.clear();
+		}
 		
 		m_Meshes[i].vertexBuffer.UploadData(&vertices[0], vertices.size() * sizeof(Vertex));
 		VertexArray::AttribInfo positionAttrib{ 3, GL_FLOAT, 0, 0 };
@@ -134,7 +141,7 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 		VertexArray::BufferInfo vertexBuffers[] = { vertexBufferInfo };
 		VertexArray::CreateInfo vaCreateInfo
 		{
-			std::span<VertexArray::BufferInfo>(vertexBuffers, 1), true, m_Meshes[i].indexBuffer
+			std::span<VertexArray::BufferInfo>(std::move(vertexBuffers), 1), true, std::move(m_Meshes[i].indexBuffer)
 		};
 		VertexArray va{ vaCreateInfo };
 
@@ -143,12 +150,13 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 			std::move(va), indexType
 		};
 		m_Meshes[i].mesh = Mesh(meshCreateInfo);
+
+		vertices.clear();
 	}
 
 	return true;
 }
 
-// fastgltf examples code
 bool Model::loadImage(fastgltf::Asset& asset, fastgltf::Image& image)
 {
 	auto getLevelCount = [](int width, int height) -> GLsizei {
@@ -208,18 +216,33 @@ void Model::Draw(DrawInfo drawInfo)
 	m_Shader.setMat4("proj", drawInfo.proj);
 	m_Shader.setMat4("view", drawInfo.view);
 
-	m_Shader.setMat4("model", glm::mat4(1.0));
+	glm::mat4 model(1.0);
+	//model = glm::scale(model, glm::vec3(0.1, 0.1, 0.1));
+	m_Shader.setMat4("model", model);
 	m_Shader.setVec3("viewPos", drawInfo.viewPos);
 
-	m_Shader.setVec3("lightPos", drawInfo.light.pos);
-	m_Shader.setVec3("lightColor", drawInfo.light.color);
+	m_Shader.setI("u_LightsSize", drawInfo.lights.size());
 
-	m_Shader.setI("u_HasTex", true);
-	glBindTextureUnit(1, m_Textures[0]);
-	m_Shader.setI("u_Tex", 1);
+	int i = 0;
+	for (const Light& light : drawInfo.lights)
+	{
+		std::string lightLoc = "u_Lights[" + std::to_string(i) + "]";
+		std::string lightPosLoc = lightLoc + ".pos";
+		std::string lightColorLoc = lightLoc + ".color";
+		m_Shader.setVec3(lightPosLoc.c_str(), light.pos);
+		m_Shader.setVec3(lightColorLoc.c_str(), light.color);
+		i++;
+	}
 
 	for (ModelMesh& m : m_Meshes)
 	{
-		m.mesh.Draw(m.vertexCount);
+		if (m_Textures.size() > 0)
+		{
+			m_Shader.setI("u_HasTex", true);
+			glBindTextureUnit(1, m_Textures[m.albedoTextureIndex]);
+			m_Shader.setI("u_Tex", 1);
+		}
+
+		m.mesh.Draw(m.indexCount);
 	}
 }

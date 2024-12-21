@@ -43,7 +43,7 @@ public:
 	inline VertexArray(VertexArray&& other) noexcept { *this = std::move(other); }
 	~VertexArray() noexcept;
 
-	void Destroy();
+	void Destroy() const;
 	void Bind() const;
 
 	inline unsigned int getHandle() const { return m_Handle; }

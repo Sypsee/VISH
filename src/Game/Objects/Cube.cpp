@@ -19,7 +19,7 @@ Cube::Cube(CreateInfo const& createInfo)
 	VertexArray::BufferInfo vertexBuffers[] = { vertexBufferInfo };
 	VertexArray::CreateInfo vaCreateInfo
 	{
-		std::span<VertexArray::BufferInfo>(vertexBuffers, 1), false, {{}}
+		std::span<VertexArray::BufferInfo>(vertexBuffers, 1), false, {{GL_NONE}}
 	};
 	VertexArray va{ vaCreateInfo };
 	Mesh::CreateInfo meshCreateInfo

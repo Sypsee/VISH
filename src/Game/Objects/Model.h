@@ -20,7 +20,8 @@ struct Vertex
 
 struct ModelMesh
 {
-	uint32_t vertexCount = 0;
+	uint32_t indexCount = 0;
+	uint8_t albedoTextureIndex = 0;
 	Buffer vertexBuffer{ {GL_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
 	Buffer indexBuffer{ {GL_ELEMENT_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
 	Mesh mesh{};
@@ -38,7 +39,7 @@ public:
 		glm::mat4 view{ 1.0 };
 		glm::vec3 viewPos{ 0.0 };
 
-		Light light;
+		std::span<Light> lights;
 	};
 
 	void Draw(DrawInfo drawInfo);

@@ -21,6 +21,7 @@ public:
 	Shader& operator=(Shader&& other) noexcept
 	{
 		std::swap(m_ProgramID, other.m_ProgramID);
+		std::swap(m_Shaders, other.m_Shaders);
 		return *this;
 	}
 	inline Shader(Shader&& other) noexcept { *this = std::move(other); }

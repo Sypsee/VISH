@@ -128,17 +128,29 @@ void Framebuffer::bindTex(const int i) const
 
 void Framebuffer::bindImage(const int i, const int unit) const
 {
+	if (i > m_TexIDs.size())
+	{
+		std::cerr << "Index I is greater than m_TexIDS\n";
+		return;
+	}
+
     glBindImageTexture(unit, m_TexIDs[i], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 }
 
 void Framebuffer::bindDepthTex(const int i) const
 {
+	if (i > m_TexIDs.size())
+	{
+		std::cerr << "Index I is greater than m_DepthTexIDs\n";
+		return;
+	}
+
     glBindTextureUnit(1, m_DepthTexIDs[i]);
 }
 
 void Framebuffer::unbind() const
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);   
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Framebuffer::changeRes(const int width, const int height, const int i)

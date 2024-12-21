@@ -57,6 +57,7 @@ Application::Application()
     glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(message_callback, nullptr);
 
 	IMGUI_CHECKVERSION();
@@ -65,6 +66,23 @@ Application::Application()
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(m_Window.getGLFWwindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 460");
+
+	m_FB = new Framebuffer(
+		Framebuffer::CreateInfo{
+			std::span<const Framebuffer::Attachment>{
+				std::array<Framebuffer::Attachment, 2>{
+					Framebuffer::Attachment{GL_COLOR_ATTACHMENT0, START_WIDTH, START_HEIGHT, 1},
+					Framebuffer::Attachment{GL_DEPTH_ATTACHMENT, START_WIDTH, START_HEIGHT}
+				}
+			}
+		}
+	);
+
+	Shader shader;
+	shader.AttachShader({ "res/shaders/cloud.frag", GL_FRAGMENT_SHADER });
+	shader.AttachShader({ "res/shaders/cloud.vert", GL_VERTEX_SHADER });
+
+	comp = new Composite(std::move(shader));
 }
 
 Application::~Application()
@@ -94,6 +112,8 @@ void Application::run()
 			m_Window.resetWindowResizeFlag();
 			glViewport(0, 0, m_Window.getWindowRes().x, m_Window.getWindowRes().y);
 			cam.setAspectRatio(m_Window.getWindowRes().x/m_Window.getWindowRes().y);
+
+			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 0);
 		}
 
 		cam.update(m_Window.getGLFWwindow());
@@ -102,11 +122,41 @@ void Application::run()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		m_FB->bind();
+
 		glClearColor(0.6, 0.9, 1.0, 1.0);
 		glClearDepth(0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		model.Draw({cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), light});
+		model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), lights });
+
+		m_FB->unbind();
+
+		glClearColor(0.6, 0.9, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		m_FB->bindTex(0);
+		m_FB->bindDepthTex(0);
+		comp->Draw({});
+
+		//ImGui::Begin("Main");
+		//if (ImGui::Button("Add Light"))
+		//{
+		//	lights.push_back({});
+		//}
+		//ImGui::End();
+
+		//ImGui::Begin("Light");
+		//int i = 0;
+		//for (const Light& light : lights)
+		//{
+		//	std::string pos = "Pos " + std::to_string(i);
+		//	std::string color = "Color " + std::to_string(i);
+		//	ImGui::DragFloat3(pos.c_str(), (float*)glm::value_ptr(light.pos), 0.5f);
+		//	ImGui::ColorEdit3(color.c_str(), (float*)glm::value_ptr(light.color));
+		//	i++;
+		//}
+		//ImGui::End();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
