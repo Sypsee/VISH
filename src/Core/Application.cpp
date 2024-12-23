@@ -78,6 +78,8 @@ Application::Application()
 		}
 	);
 
+	lights.push_back({});
+
 	Shader shader;
 	shader.AttachShader({ "res/shaders/cloud.frag", GL_FRAGMENT_SHADER });
 	shader.AttachShader({ "res/shaders/cloud.vert", GL_VERTEX_SHADER });
@@ -112,7 +114,6 @@ void Application::run()
 			m_Window.resetWindowResizeFlag();
 			glViewport(0, 0, m_Window.getWindowRes().x, m_Window.getWindowRes().y);
 			cam.setAspectRatio(m_Window.getWindowRes().x/m_Window.getWindowRes().y);
-
 			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 0);
 		}
 

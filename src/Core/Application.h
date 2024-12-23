@@ -31,7 +31,7 @@ private:
 	inline static Camera cam{glm::vec3(0, 0, 0)};
 	std::vector<Light> lights;
 	
-	Model model{ std::filesystem::path("res/models/duck/duck.gltf") };
+	Model model{ std::filesystem::path("res/models/berserk-gutsver2/scene.gltf") };
 
 	Framebuffer *m_FB;
 	Composite* comp;

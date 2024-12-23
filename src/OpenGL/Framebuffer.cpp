@@ -26,15 +26,12 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
 
             m_TexIDs.push_back(m_Handle);
             glNamedFramebufferTexture(m_FboID, createInfo.attachements[i].attachement, m_TexIDs.back(), 0);
-            
-            unsigned int attachments[1] = { createInfo.attachements[i].attachement };
-            glDrawBuffers(1, attachments);
+            glNamedFramebufferDrawBuffer(m_FboID, createInfo.attachements[i].attachement);
         }
 
         if (createInfo.attachements[i].attachement == GL_DEPTH_ATTACHMENT)
         {
-			glDrawBuffer(GL_NONE);
-			glReadBuffer(GL_NONE);
+			glNamedFramebufferDrawBuffer(m_FboID, GL_NONE);
 
             unsigned int m_Handle = 0;
             glCreateTextures(GL_TEXTURE_2D, 1, &m_Handle);
@@ -84,10 +81,11 @@ void Framebuffer::createTextureChain(unsigned int &texId, const bool recreate, c
     if (recreate)
     {
         glNamedFramebufferTexture(m_FboID, attachment, texId, 0);
+        glNamedFramebufferDrawBuffer(m_FboID, attachment);
     }
 }
 
-void Framebuffer::createDepthTexture(unsigned int &depthTexID, const bool recreate)
+void Framebuffer::createDepthTexture(unsigned int &depthTexID, const bool recreate) const
 {
     if (recreate)
     {
@@ -106,6 +104,7 @@ void Framebuffer::createDepthTexture(unsigned int &depthTexID, const bool recrea
 
     if (recreate)
     {
+        glNamedFramebufferDrawBuffer(m_FboID, GL_NONE);
         glNamedFramebufferTexture(m_FboID, GL_DEPTH_ATTACHMENT, depthTexID, 0);
     }
 }

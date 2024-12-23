@@ -20,6 +20,7 @@ Model::Model(std::filesystem::path path)
 
 	auto asset = parser.loadGltf(data.get(), path.parent_path(), options);
 
+	m_Textures.reserve(asset->images.size());
 	for (auto& image : asset->images)
 	{
 		if (!loadImage(asset.get(), image))
@@ -102,29 +103,33 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 			});
 		}
 
-		auto& indexAccessor = asset.accessors[it->indicesAccessor.value()];
-
-		GLenum indexType = GL_NONE;
-		if (indexAccessor.componentType == fastgltf::ComponentType::UnsignedByte || indexAccessor.componentType == fastgltf::ComponentType::UnsignedShort)
+		GLenum indexType = NULL;
+		if (it->indicesAccessor.has_value())
 		{
-			indexType = GL_UNSIGNED_SHORT;
-			std::vector<uint16_t> indices;
-			indices.resize(indexAccessor.count);
-			fastgltf::copyFromAccessor<std::uint16_t>(asset, indexAccessor, indices.data());
-			m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint16_t));
+			auto& indexAccessor = asset.accessors[it->indicesAccessor.value()];
 
-			m_Meshes[i].indexCount = indices.size();
-		}
-		else
-		{
-			indexType = GL_UNSIGNED_INT;
-			std::vector<uint32_t> indices;
-			indices.resize(indexAccessor.count);
-			fastgltf::copyFromAccessor<std::uint32_t>(asset, indexAccessor, indices.data());
-			m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint32_t));
+			if (indexAccessor.componentType == fastgltf::ComponentType::UnsignedByte || indexAccessor.componentType == fastgltf::ComponentType::UnsignedShort)
+			{
+				indexType = GL_UNSIGNED_SHORT;
+				std::vector<uint16_t> indices;
+				indices.resize(indexAccessor.count);
+				fastgltf::copyFromAccessor<std::uint16_t>(asset, indexAccessor, indices.data());
+				m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint16_t));
 
-			m_Meshes[i].indexCount = indices.size();
-			indices.clear();
+				m_Meshes[i].indexCount = indices.size();
+				indices.clear();
+			}
+			else
+			{
+				indexType = GL_UNSIGNED_INT;
+				std::vector<uint32_t> indices;
+				indices.resize(indexAccessor.count);
+				fastgltf::copyFromAccessor<std::uint32_t>(asset, indexAccessor, indices.data());
+				m_Meshes[i].indexBuffer.UploadData(&indices[0], indices.size() * sizeof(uint32_t));
+
+				m_Meshes[i].indexCount = indices.size();
+				indices.clear();
+			}
 		}
 		
 		m_Meshes[i].vertexBuffer.UploadData(&vertices[0], vertices.size() * sizeof(Vertex));
@@ -143,6 +148,7 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 		{
 			std::span<VertexArray::BufferInfo>(std::move(vertexBuffers), 1), true, std::move(m_Meshes[i].indexBuffer)
 		};
+
 		VertexArray va{ vaCreateInfo };
 
 		Mesh::CreateInfo meshCreateInfo
@@ -239,8 +245,8 @@ void Model::Draw(DrawInfo drawInfo)
 		if (m_Textures.size() > 0)
 		{
 			m_Shader.setI("u_HasTex", true);
-			glBindTextureUnit(1, m_Textures[m.albedoTextureIndex]);
-			m_Shader.setI("u_Tex", 1);
+			glBindTextureUnit(2, m_Textures[m.albedoTextureIndex]);
+			m_Shader.setI("u_Tex", 2);
 		}
 
 		m.mesh.Draw(m.indexCount);

@@ -45,7 +45,7 @@ public:
 
 private:
     void createTextureChain(unsigned int &texId, const bool recreate=false, const GLenum attachment=GL_COLOR_ATTACHMENT0);
-    void createDepthTexture(unsigned int &depthTexID, const bool recreate=false);
+    void createDepthTexture(unsigned int &depthTexID, const bool recreate=false) const;
 
     unsigned int m_FboID;
     std::vector<unsigned int> m_DepthTexIDs;
