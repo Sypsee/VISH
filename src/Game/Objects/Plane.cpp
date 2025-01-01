@@ -1,23 +1,24 @@
 #include "Plane.h"
+
 #include <array>
+#include <string>
 
 Plane::Plane(CreateInfo const& createInfo)
 {
-	int vertexOffset = createInfo.resolution * createInfo.resolution;
+	float triangleSide = createInfo.width / createInfo.resolution;
 
-	float triSide = 8.f / createInfo.resolution;
-	for (int x = 0; x < createInfo.resolution + 1; x++)
+	for (int row = 0; row < createInfo.resolution + 1; row++)
 	{
-		for (int y = 0; y < createInfo.resolution + 1; y++)
+		for (int col = 0; col < createInfo.resolution + 1; col++)
 		{
-			glm::vec3 crntPos = glm::vec3(y * triSide, 0.f, x * -triSide);
-			m_Vertices.push_back(crntPos.x);
-			m_Vertices.push_back(crntPos.y);
-			m_Vertices.push_back(crntPos.z);
+			glm::vec3 crntVec = glm::vec3(col * triangleSide, 0.0, row * -triangleSide);
+			m_Vertices.push_back(crntVec.x);
+			m_Vertices.push_back(crntVec.y);
+			m_Vertices.push_back(crntVec.z);
 
-			if (x < createInfo.resolution - 1 && y < createInfo.resolution - 1)
+			if (row < createInfo.resolution && col < createInfo.resolution)
 			{
-				unsigned int index = x * (createInfo.resolution + 1) + y;
+				int index = row * (createInfo.resolution + 1) + col;
 
 				m_Indices.push_back(index);
 				m_Indices.push_back(index + (createInfo.resolution + 1) + 1);
@@ -47,7 +48,7 @@ Plane::Plane(CreateInfo const& createInfo)
 	VertexArray::BufferInfo vertexBuffers[] = { vertexBufferInfo };
 	VertexArray::CreateInfo vaCreateInfo
 	{
-		std::span<VertexArray::BufferInfo>(vertexBuffers, 1), true, std::move(m_IndexBuffer)
+		std::span<VertexArray::BufferInfo>(vertexBuffers, 1), true, m_IndexBuffer
 	};
 	VertexArray va{ vaCreateInfo };
 	Mesh::CreateInfo meshCreateInfo
@@ -62,7 +63,11 @@ Plane::Plane(CreateInfo const& createInfo)
 	if (createInfo.texture.getHandle() != 69)
 	{
 		m_Texture = std::move(createInfo.texture);
-		m_Shader.setI("u_Tex", 0);
+		m_Shader.setI("u_HasTex", true);
+	}
+	else
+	{
+		m_Shader.setI("u_HasTex", false);
 	}
 }
 
@@ -82,18 +87,22 @@ void Plane::Draw(DrawInfo drawInfo)
 	m_Shader.setMat4("model", model);
 	m_Shader.setVec3("viewPos", drawInfo.viewPos);
 
-	m_Shader.setVec3("lightPos", drawInfo.light.pos);
-	m_Shader.setVec3("lightColor", drawInfo.light.color);
-
 	if (m_Texture.getHandle() != 69)
 	{
 		m_Texture.bind();
-		m_Shader.setI("u_HasTex", true);
-	}
-	else
-	{
-		m_Shader.setI("u_HasTex", false);
 	}
 
-	m_Mesh.Draw(m_Vertices.size());
+	m_Shader.setI("u_LightsSize", drawInfo.lights.size());
+	int i = 0;
+	for (const Light& light : drawInfo.lights)
+	{
+		std::string lightLoc = "u_Lights[" + std::to_string(i) + "]";
+		std::string lightPosLoc = lightLoc + ".pos";
+		std::string lightColorLoc = lightLoc + ".color";
+		m_Shader.setVec3(lightPosLoc.c_str(), light.pos);
+		m_Shader.setVec3(lightColorLoc.c_str(), light.color);
+		i++;
+	}
+
+	m_Mesh.Draw(m_Indices.size());
 }

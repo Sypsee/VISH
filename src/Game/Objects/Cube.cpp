@@ -34,7 +34,11 @@ Cube::Cube(CreateInfo const& createInfo)
 	if (createInfo.texture.getHandle() != 69)
 	{
 		m_Texture = std::move(createInfo.texture);
-		m_Shader.setI("u_Tex", 0);
+		m_Shader.setI("u_HasTex", true);
+	}
+	else
+	{
+		m_Shader.setI("u_HasTex", false);
 	}
 }
 
@@ -60,11 +64,6 @@ void Cube::Draw(DrawInfo drawInfo)
 	if (m_Texture.getHandle() != 69)
 	{
 		m_Texture.bind();
-		m_Shader.setI("u_HasTex", true);
-	}
-	else
-	{
-		m_Shader.setI("u_HasTex", false);
 	}
 
 	m_Mesh.Draw(36);

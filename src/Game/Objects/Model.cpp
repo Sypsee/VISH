@@ -37,8 +37,16 @@ Model::Model(std::filesystem::path path)
 		{
 			std::cerr << "Failed to load mesh!\n";
 		}
+
 		i++;
 	}
+
+	fastgltf::iterateSceneNodes(asset.get(), 0, fastgltf::math::fmat4x4(), [&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
+		if (node.meshIndex.has_value())
+		{
+			m_Meshes[node.meshIndex.value()].modelMatrix = matrix;
+		}
+	});
 
 	m_Shader.AttachShader({ "res/shaders/lit.vert", GL_VERTEX_SHADER });
 	m_Shader.AttachShader({ "res/shaders/lit.frag", GL_FRAGMENT_SHADER });
@@ -56,7 +64,6 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 	for (auto it = mesh.primitives.begin(); it != mesh.primitives.end(); ++it)
 	{
 		std::vector<Vertex> vertices;
-
 		auto& positionAccessor = asset.accessors[it->findAttribute("POSITION")->accessorIndex];
 
 		vertices.resize(positionAccessor.count);
@@ -223,8 +230,6 @@ void Model::Draw(DrawInfo drawInfo)
 	m_Shader.setMat4("view", drawInfo.view);
 
 	glm::mat4 model(1.0);
-	//model = glm::scale(model, glm::vec3(0.1, 0.1, 0.1));
-	m_Shader.setMat4("model", model);
 	m_Shader.setVec3("viewPos", drawInfo.viewPos);
 
 	m_Shader.setI("u_LightsSize", drawInfo.lights.size());
@@ -244,6 +249,28 @@ void Model::Draw(DrawInfo drawInfo)
 	{
 		if (m_Textures.size() > 0)
 		{
+			glm::mat4 model{};
+			model[0].x = m.modelMatrix.col(0).x();
+			model[0].y = m.modelMatrix.col(0).y();
+			model[0].z = m.modelMatrix.col(0).z();
+			model[0].w = m.modelMatrix.col(0).w();
+
+			model[1].x = m.modelMatrix.col(1).x();
+			model[1].y = m.modelMatrix.col(1).y();
+			model[1].z = m.modelMatrix.col(1).z();
+			model[1].w = m.modelMatrix.col(1).w();
+
+			model[2].x = m.modelMatrix.col(2).x();
+			model[2].y = m.modelMatrix.col(2).y();
+			model[2].z = m.modelMatrix.col(2).z();
+			model[2].w = m.modelMatrix.col(2).w();
+
+			model[3].x = m.modelMatrix.col(3).x();
+			model[3].y = m.modelMatrix.col(3).y();
+			model[3].z = m.modelMatrix.col(3).z();
+			model[3].w = m.modelMatrix.col(3).w();
+
+			m_Shader.setMat4("model", model);
 			m_Shader.setI("u_HasTex", true);
 			glBindTextureUnit(2, m_Textures[m.albedoTextureIndex]);
 			m_Shader.setI("u_Tex", 2);

@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include "../Game/Camera.h"
 #include "../Opengl/Framebuffer.h"
-#include "../Game/Objects/Model.h"
+#include "../Game/Objects/Plane.h"
 #include "../Game/Composite.h"
 #include "Window.h"
 
@@ -12,8 +12,8 @@
 class Application
 {
 public:
-	static constexpr int START_WIDTH = 800;
-	static constexpr int START_HEIGHT = 600;
+	static constexpr int START_WIDTH = 1100;
+	static constexpr int START_HEIGHT = 620;
 
 	Application();
 	~Application();
@@ -31,8 +31,12 @@ private:
 	inline static Camera cam{glm::vec3(0, 0, 0)};
 	std::vector<Light> lights;
 	
-	Model model{ std::filesystem::path("res/models/berserk-gutsver2/scene.gltf") };
+	Plane plane{ {} };
 
 	Framebuffer *m_FB;
-	Composite* comp;
+	
+	Composite* m_GridComp;
+	Composite* m_PostComp;
+
+	bool isWireframe = false;
 };

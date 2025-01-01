@@ -1,4 +1,6 @@
 #include "Application.h"
+
+#include <string>
 #include <iostream>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -56,6 +58,7 @@ Application::Application()
 	glDepthFunc(GL_GREATER);
     glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(message_callback, nullptr);
@@ -70,8 +73,10 @@ Application::Application()
 	m_FB = new Framebuffer(
 		Framebuffer::CreateInfo{
 			std::span<const Framebuffer::Attachment>{
-				std::array<Framebuffer::Attachment, 2>{
-					Framebuffer::Attachment{GL_COLOR_ATTACHMENT0, START_WIDTH, START_HEIGHT, 1},
+				std::array<Framebuffer::Attachment, 4>{
+					Framebuffer::Attachment{GL_COLOR_ATTACHMENT0, START_WIDTH, START_HEIGHT, GL_RGBA16F},
+					Framebuffer::Attachment{GL_COLOR_ATTACHMENT1, START_WIDTH, START_HEIGHT, GL_RGB16F},
+					Framebuffer::Attachment{GL_COLOR_ATTACHMENT2, START_WIDTH, START_HEIGHT, GL_RGB16F},
 					Framebuffer::Attachment{GL_DEPTH_ATTACHMENT, START_WIDTH, START_HEIGHT}
 				}
 			}
@@ -80,11 +85,16 @@ Application::Application()
 
 	lights.push_back({});
 
-	Shader shader;
-	shader.AttachShader({ "res/shaders/cloud.frag", GL_FRAGMENT_SHADER });
-	shader.AttachShader({ "res/shaders/cloud.vert", GL_VERTEX_SHADER });
+	Shader postShader;
+	postShader.AttachShader({ "res/shaders/post.frag", GL_FRAGMENT_SHADER });
+	postShader.AttachShader({ "res/shaders/post.vert", GL_VERTEX_SHADER });
 
-	comp = new Composite(std::move(shader));
+	Shader gridShader;
+	gridShader.AttachShader({ "res/shaders/grid.frag", GL_FRAGMENT_SHADER });
+	gridShader.AttachShader({ "res/shaders/grid.vert", GL_VERTEX_SHADER });
+
+	m_PostComp = new Composite(std::move(postShader));
+	m_GridComp = new Composite(std::move(gridShader));
 }
 
 Application::~Application()
@@ -114,7 +124,9 @@ void Application::run()
 			m_Window.resetWindowResizeFlag();
 			glViewport(0, 0, m_Window.getWindowRes().x, m_Window.getWindowRes().y);
 			cam.setAspectRatio(m_Window.getWindowRes().x/m_Window.getWindowRes().y);
-			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 0);
+			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 0);	// G_ALBEDO
+			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 1);	// G_POSITION
+			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 2);	// G_NORMAL
 		}
 
 		cam.update(m_Window.getGLFWwindow());
@@ -129,7 +141,24 @@ void Application::run()
 		glClearDepth(0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), lights });
+		if (isWireframe)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+		else
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+
+		// OBJECT DRAW
+
+		plane.Draw({cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), lights});
+
+		// END
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		m_GridComp->Draw({ true, cam.getViewMatrix(), cam.getProjMatrix(), cam.getPosition() });
 
 		m_FB->unbind();
 
@@ -138,7 +167,8 @@ void Application::run()
 
 		m_FB->bindTex(0);
 		m_FB->bindDepthTex(0);
-		comp->Draw({});
+
+		m_PostComp->Draw({});
 
 		//ImGui::Begin("Main");
 		//if (ImGui::Button("Add Light"))
@@ -147,17 +177,17 @@ void Application::run()
 		//}
 		//ImGui::End();
 
-		//ImGui::Begin("Light");
-		//int i = 0;
-		//for (const Light& light : lights)
-		//{
-		//	std::string pos = "Pos " + std::to_string(i);
-		//	std::string color = "Color " + std::to_string(i);
-		//	ImGui::DragFloat3(pos.c_str(), (float*)glm::value_ptr(light.pos), 0.5f);
-		//	ImGui::ColorEdit3(color.c_str(), (float*)glm::value_ptr(light.color));
-		//	i++;
-		//}
-		//ImGui::End();
+		ImGui::Begin("Light");
+		int i = 0;
+		for (const Light& light : lights)
+		{
+			std::string pos = "Pos " + std::to_string(i);
+			std::string color = "Color " + std::to_string(i);
+			ImGui::DragFloat3(pos.c_str(), (float*)glm::value_ptr(light.pos), 0.5f);
+			ImGui::ColorEdit3(color.c_str(), (float*)glm::value_ptr(light.color));
+			i++;
+		}
+		ImGui::End();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -170,12 +200,12 @@ void Application::handleInputs()
 {
 	if (glfwGetKey(m_Window.getGLFWwindow(), GLFW_KEY_O) == GLFW_PRESS)	// Wire frame
 	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		isWireframe = true;
 	}
 
 	else if (glfwGetKey(m_Window.getGLFWwindow(), GLFW_KEY_P) == GLFW_PRESS) // Default
 	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		isWireframe = false;
 	}
 	
 	else if (glfwGetKey(m_Window.getGLFWwindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) // Quit

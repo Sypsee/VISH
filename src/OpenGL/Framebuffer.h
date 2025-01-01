@@ -11,6 +11,7 @@ public:
 	{
 		const GLenum attachement=GL_COLOR_ATTACHMENT0;
 	   	const int width=800, height=600;
+		const GLenum textureFormat = GL_RGBA;
         const int chainDepth = 1;
         const int mipSizeDownscale = 2;
 	};
@@ -44,12 +45,14 @@ public:
 	inline unsigned int getDepthTexHandle(const int i) const { return m_DepthTexIDs[i]; }
 
 private:
-    void createTextureChain(unsigned int &texId, const bool recreate=false, const GLenum attachment=GL_COLOR_ATTACHMENT0);
+    void createTextureChain(unsigned int &texId, const GLenum textureFormat, const bool recreate=false, const GLenum attachment=GL_COLOR_ATTACHMENT0);
     void createDepthTexture(unsigned int &depthTexID, const bool recreate=false) const;
 
     unsigned int m_FboID;
     std::vector<unsigned int> m_DepthTexIDs;
     std::vector<unsigned int> m_TexIDs;
+    std::vector<GLenum> m_TextureFormats;
+    std::vector<GLenum> m_Attachments;
     int chainDepth;
     int downScaleLevel;
     unsigned int screenWidth, screenHeight;

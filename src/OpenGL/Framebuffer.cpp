@@ -21,12 +21,13 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
             glCreateTextures(GL_TEXTURE_2D, 1, &m_Handle);
             glBindTextureUnit(0, m_Handle);
 
-            createTextureChain(m_Handle);
+            createTextureChain(m_Handle, createInfo.attachements[i].textureFormat);
             glViewport(0, 0, createInfo.attachements[i].width, createInfo.attachements[i].height);
 
             m_TexIDs.push_back(m_Handle);
+            m_TextureFormats.push_back(createInfo.attachements[i].textureFormat);
+            m_Attachments.push_back(createInfo.attachements[i].attachement);
             glNamedFramebufferTexture(m_FboID, createInfo.attachements[i].attachement, m_TexIDs.back(), 0);
-            glNamedFramebufferDrawBuffer(m_FboID, createInfo.attachements[i].attachement);
         }
 
         if (createInfo.attachements[i].attachement == GL_DEPTH_ATTACHMENT)
@@ -45,6 +46,8 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
         }
     }
 
+    glNamedFramebufferDrawBuffers(m_FboID, m_Attachments.size(), m_Attachments.data());
+
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         std::cerr << "Failed to create framebuffer!\n";
@@ -60,7 +63,7 @@ Framebuffer::~Framebuffer() noexcept
     glDeleteTextures(m_DepthTexIDs.size(), m_DepthTexIDs.data());
 }
 
-void Framebuffer::createTextureChain(unsigned int &texId, const bool recreate, const GLenum attachment)
+void Framebuffer::createTextureChain(unsigned int &texId, const GLenum textureFormat, bool recreate, const GLenum attachment)
 {
     currentSizeX = screenWidth;
     currentSizeY = screenHeight;
@@ -76,12 +79,12 @@ void Framebuffer::createTextureChain(unsigned int &texId, const bool recreate, c
     glTextureParameteri(texId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(texId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTextureStorage2D(texId, chainDepth, GL_RGB32F, currentSizeX, currentSizeY);
+    glTextureStorage2D(texId, chainDepth, textureFormat, currentSizeX, currentSizeY);
 
     if (recreate)
     {
         glNamedFramebufferTexture(m_FboID, attachment, texId, 0);
-        glNamedFramebufferDrawBuffer(m_FboID, attachment);
+        glNamedFramebufferDrawBuffers(m_FboID, m_Attachments.size(), m_Attachments.data());
     }
 }
 
@@ -133,7 +136,7 @@ void Framebuffer::bindImage(const int i, const int unit) const
 		return;
 	}
 
-    glBindImageTexture(unit, m_TexIDs[i], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glBindImageTexture(unit, m_TexIDs[i], 0, GL_FALSE, 0, GL_READ_WRITE, m_TextureFormats[i]);
 }
 
 void Framebuffer::bindDepthTex(const int i) const
@@ -159,16 +162,16 @@ void Framebuffer::changeRes(const int width, const int height, const int i)
     screenWidth = width;
     screenHeight = height;
 
-    if (m_DepthTexIDs.size() >= i)
+    if (m_DepthTexIDs.size() > i)
     {
         this->bindDepthTex(i);
         createDepthTexture(m_DepthTexIDs[i], true);
     }
     
-    if (m_TexIDs.size() >= i)
+    if (m_TexIDs.size() > i)
     {
         this->bindTex(i);
-        createTextureChain(m_TexIDs[i], true);
+        createTextureChain(m_TexIDs[i], m_TextureFormats[i], true, m_Attachments[i]);
     }
 
     this->unbind();

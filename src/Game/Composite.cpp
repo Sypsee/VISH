@@ -36,10 +36,20 @@ Composite::Composite(Shader&& shader)
 
 void Composite::Draw(DrawInfo drawInfo)
 {
-	glDepthFunc(GL_LESS);
-	glDisable(GL_DEPTH_TEST);
+	if (!drawInfo.writeDepth)
+	{
+		glDepthFunc(GL_LESS);
+		glDisable(GL_DEPTH_TEST);
+	}
+
 	m_Shader.Bind();
+
+	m_Shader.setMat4("u_ViewMatrix", drawInfo.viewMat);
+	m_Shader.setMat4("u_ProjMatrix", drawInfo.projMat);
+	m_Shader.setVec3("u_CamPos", drawInfo.camPos);
+
 	m_Mesh.Draw(6);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_GREATER);
 }

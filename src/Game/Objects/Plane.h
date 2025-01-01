@@ -12,8 +12,9 @@ class Plane
 public:
 	struct CreateInfo
 	{
+		const int resolution = 6;
+		const int width = 6;
 		Texture&& texture{ {NULL} };
-		const int resolution = 5;
 	};
 
 	struct DrawInfo
@@ -22,7 +23,7 @@ public:
 		glm::mat4 view{ 1.0 };
 		glm::vec3 viewPos{ 0.0 };
 
-		Light light;
+		std::span<Light> lights;
 	};
 
 	Plane(CreateInfo const& createInfo);

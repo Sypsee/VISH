@@ -11,7 +11,10 @@ public:
 
 	struct DrawInfo
 	{
-
+		bool writeDepth = false;
+		glm::mat4 viewMat;
+		glm::mat4 projMat;
+		glm::vec3 camPos;
 	};
 
 	void Draw(DrawInfo drawInfo);

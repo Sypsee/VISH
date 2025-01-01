@@ -16,7 +16,7 @@ public:
 	glm::vec2 getWindowRes() const { return m_WindowRes; }
 	GLFWwindow* getGLFWwindow() const { return m_Window; }
 
-	inline bool wasWindowResized() { return m_FramebufferResized; }
+	inline bool wasWindowResized() const { return m_FramebufferResized; }
     inline void resetWindowResizeFlag() { m_FramebufferResized = false; }
 
 private:

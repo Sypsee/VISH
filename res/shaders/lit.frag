@@ -1,6 +1,8 @@
-#version 460
+#version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 gAlbedo;
+layout(location = 1) out vec3 gPosition;
+layout(location = 2) out vec3 gNormal;
 
 in vec3 normal;
 in vec2 uv;
@@ -17,7 +19,7 @@ struct Light
 uniform Light[MAX_LIGHTS] u_Lights;
 uniform int u_LightsSize;
 uniform vec3 viewPos;
-uniform bool u_HasTex;
+uniform bool u_HasTex = false;
 uniform sampler2D u_Tex;
 
 vec3 brdf(vec3 lightDir, vec3 viewDir, float roughness, vec3 normal, vec3 albedo, float metallic, vec3 reflectance)
@@ -58,9 +60,13 @@ const vec3 reflectance = vec3(0.1);
 
 void main()
 {
-    vec3 albedo = u_HasTex ? texture(u_Tex, uv).rgb : vec3(1.0, 0.0, 0.0);
+    vec4 albedoTexture = texture(u_Tex, uv);
+    vec3 albedo = u_HasTex ? vec3(1.0, 0.0, 0.0) : albedoTexture.rgb;
 
     vec3 norm = normalize(normal);
+    gNormal = norm;
+    gPosition = fragPos;
+
     vec3 viewDir = normalize(viewPos - fragPos);
     
     vec3 color = vec3(0.0);
@@ -79,5 +85,5 @@ void main()
     color *= 2.0;   // BRIGHTER IMAGE!
 
     vec3 finalColor = pow(color, vec3(1/2.2));
-    FragColor = vec4(finalColor, 1.0);
+    gAlbedo = vec4(finalColor, 1.0);
 }
