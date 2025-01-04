@@ -3,6 +3,7 @@
 #include "../OpenGL/Shader.h"
 #include "../OpenGL/VertexArray.h"
 #include "Objects/Mesh.h"
+#include "Objects/ObjectInfo.h"
 
 class Composite
 {
@@ -12,9 +13,10 @@ public:
 	struct DrawInfo
 	{
 		bool writeDepth = false;
+		glm::vec3 camPos;
+		std::span<Light> lights;
 		glm::mat4 viewMat;
 		glm::mat4 projMat;
-		glm::vec3 camPos;
 	};
 
 	void Draw(DrawInfo drawInfo);

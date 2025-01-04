@@ -4,13 +4,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
+#include <filesystem>
 
 class Shader final
 {
 public:
 	struct AttachInfo final
 	{
-		const char* shaderPath = 0;
+		std::filesystem::path path;
 		GLenum shaderType = 0;
 	};
 

@@ -85,23 +85,10 @@ void Plane::Draw(DrawInfo drawInfo)
 	model = glm::scale(model, transform.scale);
 
 	m_Shader.setMat4("model", model);
-	m_Shader.setVec3("viewPos", drawInfo.viewPos);
 
 	if (m_Texture.getHandle() != 69)
 	{
 		m_Texture.bind();
-	}
-
-	m_Shader.setI("u_LightsSize", drawInfo.lights.size());
-	int i = 0;
-	for (const Light& light : drawInfo.lights)
-	{
-		std::string lightLoc = "u_Lights[" + std::to_string(i) + "]";
-		std::string lightPosLoc = lightLoc + ".pos";
-		std::string lightColorLoc = lightLoc + ".color";
-		m_Shader.setVec3(lightPosLoc.c_str(), light.pos);
-		m_Shader.setVec3(lightColorLoc.c_str(), light.color);
-		i++;
 	}
 
 	m_Mesh.Draw(m_Indices.size());

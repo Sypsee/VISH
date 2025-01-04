@@ -71,6 +71,12 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 			vertices[idx].position = glm::vec3(pos.x(), pos.y(), pos.z());
 		});
 
+		auto& normalAccessor = asset.accessors[it->findAttribute("NORMAL")->accessorIndex];
+
+		fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(asset, normalAccessor, [&](fastgltf::math::fvec3 norm, std::size_t idx) {
+			vertices[idx].normal = glm::vec3(norm.x(), norm.y(), norm.z());
+		});
+
 		std::size_t baseColorTexcoordIndex = 0;
 
 		if (it->materialIndex.has_value())
@@ -140,11 +146,12 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 		}
 		
 		m_Meshes[i].vertexBuffer.UploadData(&vertices[0], vertices.size() * sizeof(Vertex));
-		VertexArray::AttribInfo positionAttrib{ 3, GL_FLOAT, 0, 0 };
-		VertexArray::AttribInfo uvAttrib{ 2, GL_FLOAT, 3 * sizeof(float), 2 };
+		VertexArray::AttribInfo positionAttrib{ 3, GL_FLOAT, offsetof(Vertex, Vertex::position), 0 };
+		VertexArray::AttribInfo normalAttrib{ 3, GL_FLOAT, offsetof(Vertex, Vertex::normal), 1 };
+		VertexArray::AttribInfo uvAttrib{ 2, GL_FLOAT, offsetof(Vertex, Vertex::uv), 2};
 
-		std::array<VertexArray::AttribInfo, 2> attribs = {
-			positionAttrib, uvAttrib
+		std::array<VertexArray::AttribInfo, 3> attribs = {
+			positionAttrib, normalAttrib, uvAttrib
 		};
 		VertexArray::BufferInfo vertexBufferInfo
 		{
@@ -232,49 +239,37 @@ void Model::Draw(DrawInfo drawInfo)
 	glm::mat4 model(1.0);
 	m_Shader.setVec3("viewPos", drawInfo.viewPos);
 
-	m_Shader.setI("u_LightsSize", drawInfo.lights.size());
-
-	int i = 0;
-	for (const Light& light : drawInfo.lights)
-	{
-		std::string lightLoc = "u_Lights[" + std::to_string(i) + "]";
-		std::string lightPosLoc = lightLoc + ".pos";
-		std::string lightColorLoc = lightLoc + ".color";
-		m_Shader.setVec3(lightPosLoc.c_str(), light.pos);
-		m_Shader.setVec3(lightColorLoc.c_str(), light.color);
-		i++;
-	}
-
 	for (ModelMesh& m : m_Meshes)
 	{
 		if (m_Textures.size() > 0)
 		{
-			glm::mat4 model{};
-			model[0].x = m.modelMatrix.col(0).x();
-			model[0].y = m.modelMatrix.col(0).y();
-			model[0].z = m.modelMatrix.col(0).z();
-			model[0].w = m.modelMatrix.col(0).w();
-
-			model[1].x = m.modelMatrix.col(1).x();
-			model[1].y = m.modelMatrix.col(1).y();
-			model[1].z = m.modelMatrix.col(1).z();
-			model[1].w = m.modelMatrix.col(1).w();
-
-			model[2].x = m.modelMatrix.col(2).x();
-			model[2].y = m.modelMatrix.col(2).y();
-			model[2].z = m.modelMatrix.col(2).z();
-			model[2].w = m.modelMatrix.col(2).w();
-
-			model[3].x = m.modelMatrix.col(3).x();
-			model[3].y = m.modelMatrix.col(3).y();
-			model[3].z = m.modelMatrix.col(3).z();
-			model[3].w = m.modelMatrix.col(3).w();
-
-			m_Shader.setMat4("model", model);
 			m_Shader.setI("u_HasTex", true);
 			glBindTextureUnit(2, m_Textures[m.albedoTextureIndex]);
 			m_Shader.setI("u_Tex", 2);
 		}
+
+		glm::mat4 model(1.0);
+		/*model[0].x = m.modelMatrix.col(0).x();
+		model[0].y = m.modelMatrix.col(0).y();
+		model[0].z = m.modelMatrix.col(0).z();
+		model[0].w = m.modelMatrix.col(0).w();
+
+		model[1].x = m.modelMatrix.col(1).x();
+		model[1].y = m.modelMatrix.col(1).y();
+		model[1].z = m.modelMatrix.col(1).z();
+		model[1].w = m.modelMatrix.col(1).w();
+
+		model[2].x = m.modelMatrix.col(2).x();
+		model[2].y = m.modelMatrix.col(2).y();
+		model[2].z = m.modelMatrix.col(2).z();
+		model[2].w = m.modelMatrix.col(2).w();
+
+		model[3].x = m.modelMatrix.col(3).x();
+		model[3].y = m.modelMatrix.col(3).y();
+		model[3].z = m.modelMatrix.col(3).z();
+		model[3].w = m.modelMatrix.col(3).w();*/
+
+		m_Shader.setMat4("model", model);
 
 		m.mesh.Draw(m.indexCount);
 	}

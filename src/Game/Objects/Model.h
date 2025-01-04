@@ -15,6 +15,7 @@
 struct Vertex
 {
 	glm::vec3 position;
+	glm::vec3 normal;
 	glm::vec2 uv;
 };
 
@@ -39,8 +40,6 @@ public:
 		glm::mat4 proj{ 1.0 };
 		glm::mat4 view{ 1.0 };
 		glm::vec3 viewPos{ 0.0 };
-
-		std::span<Light> lights;
 	};
 
 	void Draw(DrawInfo drawInfo);

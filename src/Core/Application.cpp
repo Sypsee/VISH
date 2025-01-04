@@ -11,7 +11,7 @@ void Application::mouse_callback(GLFWwindow *window, double xpos, double ypos)
     cam.mouse_callback(xpos, ypos);
 }
 
-void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
 	auto const src_str = [source]() {
 		switch (source)
@@ -85,6 +85,8 @@ Application::Application()
 
 	lights.push_back({});
 
+	Texture cubemapTex{ {"res/textures/cubemap.png", GL_TEXTURE_CUBE_MAP} };
+
 	Shader postShader;
 	postShader.AttachShader({ "res/shaders/post.frag", GL_FRAGMENT_SHADER });
 	postShader.AttachShader({ "res/shaders/post.vert", GL_VERTEX_SHADER });
@@ -93,8 +95,13 @@ Application::Application()
 	gridShader.AttachShader({ "res/shaders/grid.frag", GL_FRAGMENT_SHADER });
 	gridShader.AttachShader({ "res/shaders/grid.vert", GL_VERTEX_SHADER });
 
+	Shader cubemapShader;
+	cubemapShader.AttachShader({ "res/shaders/cubemap.frag", GL_FRAGMENT_SHADER });
+	cubemapShader.AttachShader({ "res/shaders/cubemap.vert", GL_VERTEX_SHADER });
+
 	m_PostComp = new Composite(std::move(postShader));
 	m_GridComp = new Composite(std::move(gridShader));
+	cubemap = new Cube({ std::move(cubemapTex), true, std::move(cubemapShader) });
 }
 
 Application::~Application()
@@ -137,7 +144,7 @@ void Application::run()
 
 		m_FB->bind();
 
-		glClearColor(0.6, 0.9, 1.0, 1.0);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClearDepth(0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -150,32 +157,39 @@ void Application::run()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
-		// OBJECT DRAW
+		// OBJECTS DRAW
 
-		plane.Draw({cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition(), lights});
+		//plane.Draw({cam.getProjMatrix(), cam.getViewMatrix()});
+		model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition() });
+
+		glDepthMask(GL_FALSE);
+		cubemap->Draw({ cam.getProjMatrix(), glm::mat4(glm::mat3(cam.getViewMatrix())), cam.getPosition() });
+		glDepthMask(GL_TRUE);
 
 		// END
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		m_GridComp->Draw({ true, cam.getViewMatrix(), cam.getProjMatrix(), cam.getPosition() });
+		m_GridComp->Draw({ true, cam.getPosition(), {}, cam.getViewMatrix(), cam.getProjMatrix()});
 
 		m_FB->unbind();
 
-		glClearColor(0.6, 0.9, 1.0, 1.0);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		m_FB->bindTex(0);
+		glBindTextureUnit(0, m_FB->getTexHandle(0));
+		glBindTextureUnit(1, m_FB->getTexHandle(1));
+		glBindTextureUnit(2, m_FB->getTexHandle(2));
 		m_FB->bindDepthTex(0);
 
-		m_PostComp->Draw({});
+		m_PostComp->Draw({ false, cam.getPosition(), lights });
 
-		//ImGui::Begin("Main");
-		//if (ImGui::Button("Add Light"))
-		//{
-		//	lights.push_back({});
-		//}
-		//ImGui::End();
+		ImGui::Begin("Main");
+		if (ImGui::Button("Add Light"))
+		{
+			lights.push_back({});
+		}
+		ImGui::End();
 
 		ImGui::Begin("Light");
 		int i = 0;

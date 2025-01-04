@@ -4,6 +4,8 @@
 #include "../Game/Camera.h"
 #include "../Opengl/Framebuffer.h"
 #include "../Game/Objects/Plane.h"
+#include "../Game/Objects/Cube.h"
+#include "../Game/Objects/Model.h"
 #include "../Game/Composite.h"
 #include "Window.h"
 
@@ -31,12 +33,15 @@ private:
 	inline static Camera cam{glm::vec3(0, 0, 0)};
 	std::vector<Light> lights;
 	
-	Plane plane{ {} };
+	//Plane plane{ {} };
+	Model model{ "res/models/berserk-gutsver2/Scene.gltf" };
 
 	Framebuffer *m_FB;
 	
 	Composite* m_GridComp;
 	Composite* m_PostComp;
+
+	Cube* cubemap;
 
 	bool isWireframe = false;
 };

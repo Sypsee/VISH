@@ -30,8 +30,10 @@ Composite::Composite(Shader&& shader)
 	m_Mesh = Mesh(meshCreateInfo);
 
 	m_Shader.Bind();
-	m_Shader.setI("u_ScreenTex", 0);
-	m_Shader.setI("u_DepthTex", 1);
+	m_Shader.setI("g_Albedo", 0);
+	m_Shader.setI("g_Position", 1);
+	m_Shader.setI("g_Normal", 2);
+	m_Shader.setI("u_DepthTex", 3);
 }
 
 void Composite::Draw(DrawInfo drawInfo)
@@ -46,7 +48,22 @@ void Composite::Draw(DrawInfo drawInfo)
 
 	m_Shader.setMat4("u_ViewMatrix", drawInfo.viewMat);
 	m_Shader.setMat4("u_ProjMatrix", drawInfo.projMat);
-	m_Shader.setVec3("u_CamPos", drawInfo.camPos);
+	m_Shader.setVec3("u_ViewPos", drawInfo.camPos);
+
+	if (drawInfo.lights.size() > 0)
+	{
+		m_Shader.setI("u_LightsSize", drawInfo.lights.size());
+		int i = 0;
+		for (const Light& light : drawInfo.lights)
+		{
+			std::string lightLoc = "u_Lights[" + std::to_string(i) + "]";
+			std::string lightPosLoc = lightLoc + ".pos";
+			std::string lightColorLoc = lightLoc + ".color";
+			m_Shader.setVec3(lightPosLoc.c_str(), light.pos);
+			m_Shader.setVec3(lightColorLoc.c_str(), light.color);
+			i++;
+		}
+	}
 
 	m_Mesh.Draw(6);
 

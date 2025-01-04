@@ -5,7 +5,7 @@
 #include <sstream>
 #include <iostream>
 
-void CheckCompileError(unsigned int shader, const char* shaderType)
+void CheckCompileError(unsigned int shader, const std::filesystem::path &shaderPath)
 {
 	GLint isCompiled = 0;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
@@ -19,17 +19,16 @@ void CheckCompileError(unsigned int shader, const char* shaderType)
 		std::vector<char> errorLog(maxLength);
 		glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
 
-        std::cout << shaderType << " : COMPILATION ERROR : " << std::endl;
+        std::cout << shaderPath << " : COMPILATION ERROR : \n";
 
         for (char log : errorLog)
         {
             std::cout << log;
         }
 
-        std::cout << std::endl;
+        std::cout << "\n";
 
-		// Exit with failure.
-		glDeleteShader(shader); // Don't leak the shader.
+		glDeleteShader(shader);
 	}
 }
 
@@ -52,7 +51,7 @@ void Shader::AttachShader(AttachInfo const& attachInfo)
 	shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	try
 	{
-		shaderFile.open(attachInfo.shaderPath);
+		shaderFile.open(attachInfo.path);
 		std::stringstream shaderStream;
         shaderStream << shaderFile.rdbuf();
         shaderFile.close();
@@ -60,7 +59,7 @@ void Shader::AttachShader(AttachInfo const& attachInfo)
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "Failed to read shader file!" << std::endl;
+		std::cout << "Failed to read shader file!\n";
 	}
 	const char* shaderCodeChar = shaderCode.c_str();
 
@@ -68,7 +67,7 @@ void Shader::AttachShader(AttachInfo const& attachInfo)
 	glShaderSource(shader, 1, &shaderCodeChar, NULL);
 	glCompileShader(shader);
 
-	CheckCompileError(shader, attachInfo.shaderPath);
+	CheckCompileError(shader, attachInfo.path);
 
 	glAttachShader(m_ProgramID, shader);
 	glLinkProgram(m_ProgramID);
@@ -128,6 +127,5 @@ void Shader::setMat4(const char* u_name, glm::mat4 val)
 
 unsigned int Shader::GetUniformLocation(const char* u_name)
 {
-    unsigned int loc = glGetUniformLocation(m_ProgramID, u_name);
-    return loc;
+    return glGetUniformLocation(m_ProgramID, u_name);
 }

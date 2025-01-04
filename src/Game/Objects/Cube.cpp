@@ -28,8 +28,15 @@ Cube::Cube(CreateInfo const& createInfo)
 	};
 	m_Mesh = Mesh(meshCreateInfo);
 
-	m_Shader.AttachShader({ "res/shaders/lit.vert", GL_VERTEX_SHADER });
-	m_Shader.AttachShader({ "res/shaders/lit.frag", GL_FRAGMENT_SHADER });
+	if (createInfo.customShader)
+	{
+		m_Shader = std::move(createInfo.shader);
+	}
+	else
+	{
+		m_Shader.AttachShader({ "res/shaders/lit.vert", GL_VERTEX_SHADER });
+		m_Shader.AttachShader({ "res/shaders/lit.frag", GL_FRAGMENT_SHADER });
+	}
 
 	if (createInfo.texture.getHandle() != 69)
 	{
@@ -40,6 +47,8 @@ Cube::Cube(CreateInfo const& createInfo)
 	{
 		m_Shader.setI("u_HasTex", false);
 	}
+
+	m_Shader.setI("u_Tex", 0);
 }
 
 void Cube::Draw(DrawInfo drawInfo)
@@ -57,9 +66,6 @@ void Cube::Draw(DrawInfo drawInfo)
 
 	m_Shader.setMat4("model", model);
 	m_Shader.setVec3("viewPos", drawInfo.viewPos);
-
-	m_Shader.setVec3("lightPos", drawInfo.light.pos);
-	m_Shader.setVec3("lightColor", drawInfo.light.color);
 
 	if (m_Texture.getHandle() != 69)
 	{

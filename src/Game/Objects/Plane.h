@@ -14,16 +14,13 @@ public:
 	{
 		const int resolution = 6;
 		const int width = 6;
-		Texture&& texture{ {NULL} };
+		Texture&& texture{ {} };
 	};
 
 	struct DrawInfo
 	{
 		glm::mat4 proj{ 1.0 };
 		glm::mat4 view{ 1.0 };
-		glm::vec3 viewPos{ 0.0 };
-
-		std::span<Light> lights;
 	};
 
 	Plane(CreateInfo const& createInfo);

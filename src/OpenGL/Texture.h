@@ -1,13 +1,22 @@
 #pragma once
 
 #include <utility>
+#include <glad/glad.h>
+#include <filesystem>
+
+struct CubemapData
+{
+	unsigned char* data;
+	int width, height, nrChannels;
+};
 
 class Texture final
 {
 public:
 	struct CreateInfo final
 	{
-		const char* path;
+		std::filesystem::path path{};
+		const GLenum type = GL_TEXTURE_2D;
 	};
 
 	constexpr Texture() noexcept = default;

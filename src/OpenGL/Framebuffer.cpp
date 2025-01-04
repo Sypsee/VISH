@@ -147,7 +147,7 @@ void Framebuffer::bindDepthTex(const int i) const
 		return;
 	}
 
-    glBindTextureUnit(1, m_DepthTexIDs[i]);
+    glBindTextureUnit(3, m_DepthTexIDs[i]);
 }
 
 void Framebuffer::unbind() const

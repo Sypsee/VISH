@@ -5,7 +5,21 @@ layout(location = 0) out vec4 fragColor;
 in vec3 fragPos;
 in vec2 uv;
 
-uniform sampler2D u_ScreenTex;
+#define MAX_LIGHTS 10
+
+struct Light
+{
+    vec3 pos;
+    vec3 color;
+};
+
+uniform sampler2D g_Albedo;
+uniform sampler2D g_Position;
+uniform sampler2D g_Normal;
+
+uniform Light[MAX_LIGHTS] u_Lights;
+uniform int u_LightsSize;
+uniform vec3 u_ViewPos;
 
 vec3 acesApprox(vec3 x)
 {
@@ -19,6 +33,19 @@ vec3 acesApprox(vec3 x)
 
 void main()
 {
-	vec4 screenColor = texture(u_ScreenTex, uv);
-	fragColor = vec4(acesApprox(screenColor.rgb), screenColor.a);
+	vec4 albedo = texture(g_Albedo, uv);
+    vec3 objPos = texture(g_Position, uv).xyz;
+    vec3 normal = texture(g_Normal, uv).xyz;
+
+	vec3 viewDir = normalize(u_ViewPos - objPos);
+    
+    vec3 color = albedo.xyz * 0.1;
+    for (int i = 0; i < u_LightsSize; i++)
+    {
+        vec3 lightDir = normalize(u_Lights[i].pos - fragPos);
+        vec3 diffuse = max(dot(normal, lightDir), 0.0) * albedo.xyz * u_Lights[i].color;
+        color += diffuse;
+    }
+
+	fragColor = vec4(acesApprox(color), albedo.a);
 }

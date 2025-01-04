@@ -10,7 +10,9 @@ class Cube
 public:
 	struct CreateInfo
 	{
-		Texture&& texture{ {NULL} };
+		Texture&& texture{ {} };
+		bool customShader = false;
+		Shader&& shader{};
 	};
 
 	struct DrawInfo
@@ -18,8 +20,6 @@ public:
 		glm::mat4 proj{ 1.0 };
 		glm::mat4 view{ 1.0 };
 		glm::vec3 viewPos{ 0.0 };
-
-		Light light;
 	};
 
 	Cube(CreateInfo const& createInfo);
