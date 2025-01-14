@@ -7,7 +7,7 @@ Texture::Texture(CreateInfo const& createInfo)
 {
 	if (createInfo.path.empty()) return;
 
-	stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(false);
 
 	if (createInfo.type == GL_TEXTURE_2D)
 	{
@@ -62,7 +62,7 @@ Texture::Texture(CreateInfo const& createInfo)
 			);
 		}
 
-		glTextureStorage2D(m_Handle, 1, GL_RGBA16F, cubemapData[0].width, cubemapData[0].height);
+		glTextureStorage2D(m_Handle, 1, GL_RGB16F, cubemapData[0].width, cubemapData[0].height);
 
 		for (int i = 0; i < 6; i++)
 		{

@@ -25,7 +25,7 @@ struct ModelMesh
 	uint8_t albedoTextureIndex = 0;
 	Buffer vertexBuffer{ {GL_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
 	Buffer indexBuffer{ {GL_ELEMENT_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
-	fastgltf::math::fmat4x4 modelMatrix;
+	glm::mat4 modelMatrix;
 	Mesh mesh{};
 };
 

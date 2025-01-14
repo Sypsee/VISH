@@ -85,7 +85,7 @@ Application::Application()
 
 	lights.push_back({});
 
-	Texture cubemapTex{ {"res/textures/cubemap.png", GL_TEXTURE_CUBE_MAP} };
+	Texture cubemapTex{ {"res/textures/skybox.png", GL_TEXTURE_CUBE_MAP} };
 
 	Shader postShader;
 	postShader.AttachShader({ "res/shaders/post.frag", GL_FRAGMENT_SHADER });
@@ -148,6 +148,10 @@ void Application::run()
 		glClearDepth(0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glDepthMask(GL_FALSE);
+		cubemap->Draw({ cam.getProjMatrix(), glm::mat4(glm::mat3(cam.getViewMatrix())), cam.getPosition() });
+		glDepthMask(GL_TRUE);
+
 		if (isWireframe)
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -161,10 +165,6 @@ void Application::run()
 
 		//plane.Draw({cam.getProjMatrix(), cam.getViewMatrix()});
 		model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition() });
-
-		glDepthMask(GL_FALSE);
-		cubemap->Draw({ cam.getProjMatrix(), glm::mat4(glm::mat3(cam.getViewMatrix())), cam.getPosition() });
-		glDepthMask(GL_TRUE);
 
 		// END
 

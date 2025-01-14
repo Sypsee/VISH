@@ -34,7 +34,7 @@ private:
 	std::vector<Light> lights;
 	
 	//Plane plane{ {} };
-	Model model{ "res/models/berserk-gutsver2/Scene.gltf" };
+	Model model{ "res/models/Cube/SM_Deccer_Cubes_Textured.gltf" };
 
 	Framebuffer *m_FB;
 	

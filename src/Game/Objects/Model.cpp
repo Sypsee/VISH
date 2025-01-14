@@ -3,6 +3,24 @@
 #include <iostream>
 #include <stb_image/stb_image.h>
 
+glm::mat4 nodeToMat4(const fastgltf::Node& node)
+{
+	glm::mat4 model{ 1.0f };
+
+	if (auto* trs = std::get_if<fastgltf::TRS>(&node.transform))
+	{
+		const auto rotation = glm::quat{ trs->rotation[3], trs->rotation[0], trs->rotation[1], trs->rotation[2] };
+		const auto scale = glm::make_vec3(trs->scale.data());
+		const auto translation = glm::make_vec3(trs->translation.data());
+
+		const glm::mat4 rotationMat = glm::mat4_cast(rotation);
+
+		model = glm::translate(glm::mat4(1.0f), translation) * rotationMat * glm::scale(glm::mat4(1.0f), scale);
+	}
+
+	return model;
+}
+
 Model::Model(std::filesystem::path path)
 {
 	auto parser = fastgltf::Parser(fastgltf::Extensions::KHR_texture_basisu | fastgltf::Extensions::KHR_mesh_quantization |
@@ -44,7 +62,7 @@ Model::Model(std::filesystem::path path)
 	fastgltf::iterateSceneNodes(asset.get(), 0, fastgltf::math::fmat4x4(), [&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
 		if (node.meshIndex.has_value())
 		{
-			m_Meshes[node.meshIndex.value()].modelMatrix = matrix;
+			m_Meshes[node.meshIndex.value()].modelMatrix = nodeToMat4(node);
 		}
 	});
 
@@ -248,28 +266,7 @@ void Model::Draw(DrawInfo drawInfo)
 			m_Shader.setI("u_Tex", 2);
 		}
 
-		glm::mat4 model(1.0);
-		/*model[0].x = m.modelMatrix.col(0).x();
-		model[0].y = m.modelMatrix.col(0).y();
-		model[0].z = m.modelMatrix.col(0).z();
-		model[0].w = m.modelMatrix.col(0).w();
-
-		model[1].x = m.modelMatrix.col(1).x();
-		model[1].y = m.modelMatrix.col(1).y();
-		model[1].z = m.modelMatrix.col(1).z();
-		model[1].w = m.modelMatrix.col(1).w();
-
-		model[2].x = m.modelMatrix.col(2).x();
-		model[2].y = m.modelMatrix.col(2).y();
-		model[2].z = m.modelMatrix.col(2).z();
-		model[2].w = m.modelMatrix.col(2).w();
-
-		model[3].x = m.modelMatrix.col(3).x();
-		model[3].y = m.modelMatrix.col(3).y();
-		model[3].z = m.modelMatrix.col(3).z();
-		model[3].w = m.modelMatrix.col(3).w();*/
-
-		m_Shader.setMat4("model", model);
+		m_Shader.setMat4("model", m.modelMatrix);
 
 		m.mesh.Draw(m.indexCount);
 	}
