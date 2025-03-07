@@ -108,7 +108,7 @@ bool Model::loadMesh(fastgltf::Asset& asset, fastgltf::Mesh &mesh, const int i)
 				if (!texture.imageIndex.has_value())
 					return false;
 
-				m_Meshes[i].albedoTextureIndex = texture.imageIndex.value();
+				m_Meshes[i].albedoTextureIndex = static_cast<uint8_t>(texture.imageIndex.value());
 				
 				if (baseColorTexture->transform && baseColorTexture->transform->texCoordIndex.has_value())
 				{

@@ -104,7 +104,7 @@ void Shader::setF(const char* u_name, float v1)
     glUniform1f(GetUniformLocation(u_name), v1);
 }
 
-void Shader::setI(const char* u_name, float v1)
+void Shader::setI(const char* u_name, int v1)
 {
     glUniform1i(GetUniformLocation(u_name), v1);
 }

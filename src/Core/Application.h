@@ -33,8 +33,8 @@ private:
 	inline static Camera cam{glm::vec3(0, 0, 0)};
 	std::vector<Light> lights;
 	
-	//Plane plane{ {} };
-	Model model{ "res/models/Cube/SM_Deccer_Cubes_Textured.gltf" };
+	Plane *plane;
+	//Model model{ "res/models/sponza/Sponza.gltf" };
 
 	Framebuffer *m_FB;
 	

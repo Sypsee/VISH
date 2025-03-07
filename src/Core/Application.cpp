@@ -72,13 +72,11 @@ Application::Application()
 
 	m_FB = new Framebuffer(
 		Framebuffer::CreateInfo{
-			std::span<const Framebuffer::Attachment>{
-				std::array<Framebuffer::Attachment, 4>{
-					Framebuffer::Attachment{GL_COLOR_ATTACHMENT0, START_WIDTH, START_HEIGHT, GL_RGBA16F},
-					Framebuffer::Attachment{GL_COLOR_ATTACHMENT1, START_WIDTH, START_HEIGHT, GL_RGB16F},
-					Framebuffer::Attachment{GL_COLOR_ATTACHMENT2, START_WIDTH, START_HEIGHT, GL_RGB16F},
-					Framebuffer::Attachment{GL_DEPTH_ATTACHMENT, START_WIDTH, START_HEIGHT}
-				}
+			std::array<Framebuffer::Attachment, 4>{
+				Framebuffer::Attachment{GL_COLOR_ATTACHMENT0, START_WIDTH, START_HEIGHT, GL_RGBA16F},
+				Framebuffer::Attachment{GL_COLOR_ATTACHMENT1, START_WIDTH, START_HEIGHT, GL_RGB16F},
+				Framebuffer::Attachment{GL_COLOR_ATTACHMENT2, START_WIDTH, START_HEIGHT, GL_RGB16F},
+				Framebuffer::Attachment{GL_DEPTH_ATTACHMENT, START_WIDTH, START_HEIGHT}
 			}
 		}
 	);
@@ -99,9 +97,15 @@ Application::Application()
 	cubemapShader.AttachShader({ "res/shaders/cubemap.frag", GL_FRAGMENT_SHADER });
 	cubemapShader.AttachShader({ "res/shaders/cubemap.vert", GL_VERTEX_SHADER });
 
+	Shader planeShader;
+	planeShader.AttachShader({ "res/shaders/water.frag", GL_FRAGMENT_SHADER });
+	planeShader.AttachShader({ "res/shaders/water.vert", GL_VERTEX_SHADER });
+
 	m_PostComp = new Composite(std::move(postShader));
 	m_GridComp = new Composite(std::move(gridShader));
 	cubemap = new Cube({ std::move(cubemapTex), true, std::move(cubemapShader) });
+	plane = new Plane{ { 8, 20, true, std::move(planeShader) } };
+	plane->transform.pos.y += 1;
 }
 
 Application::~Application()
@@ -109,28 +113,26 @@ Application::~Application()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+
+	delete m_FB;
+	delete m_GridComp;
+	delete m_PostComp;
+	delete cubemap;
+	delete plane;
 }
 
 void Application::run()
 {
-	float currentFrame = glfwGetTime();
-	float lastFrame = currentFrame;
-	float dt = 0;
-
 	while (!m_Window.shouldClose())
 	{
 		glfwPollEvents();
 		handleInputs();
 		
-		currentFrame = glfwGetTime();
-		dt = std::max(currentFrame - lastFrame, 0.05f);
-		lastFrame = currentFrame;
-
 		if (m_Window.wasWindowResized())
 		{
 			m_Window.resetWindowResizeFlag();
 			glViewport(0, 0, m_Window.getWindowRes().x, m_Window.getWindowRes().y);
-			cam.setAspectRatio(m_Window.getWindowRes().x/m_Window.getWindowRes().y);
+			cam.setAspectRatio(static_cast<float>(m_Window.getWindowRes().x) / m_Window.getWindowRes().y);
 			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 0);	// G_ALBEDO
 			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 1);	// G_POSITION
 			m_FB->changeRes(m_Window.getWindowRes().x, m_Window.getWindowRes().y, 2);	// G_NORMAL
@@ -163,8 +165,8 @@ void Application::run()
 
 		// OBJECTS DRAW
 
-		//plane.Draw({cam.getProjMatrix(), cam.getViewMatrix()});
-		model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition() });
+		plane->Draw({cam.getProjMatrix(), cam.getViewMatrix()});
+		//model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition() });
 
 		// END
 
@@ -184,6 +186,7 @@ void Application::run()
 
 		m_PostComp->Draw({ false, cam.getPosition(), lights });
 
+		// IMGUI
 		ImGui::Begin("Main");
 		if (ImGui::Button("Add Light"))
 		{

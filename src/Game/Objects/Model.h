@@ -21,7 +21,7 @@ struct Vertex
 
 struct ModelMesh
 {
-	uint32_t indexCount = 0;
+	size_t indexCount = 0;
 	uint8_t albedoTextureIndex = 0;
 	Buffer vertexBuffer{ {GL_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };
 	Buffer indexBuffer{ {GL_ELEMENT_ARRAY_BUFFER, NULL, NULL, GL_STATIC_DRAW} };

@@ -14,7 +14,7 @@ public:
 	constexpr Mesh() noexcept = default;
 	Mesh(CreateInfo const& info);
 
-	void Draw(uint16_t m_TriCount);
+	void Draw(size_t m_TriCount);
 
 private:
 	VertexArray m_Va;

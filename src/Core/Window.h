@@ -13,7 +13,7 @@ public:
 	Window& operator=(const Window&) = delete;
 
 	bool shouldClose() { return glfwWindowShouldClose(m_Window); }
-	glm::vec2 getWindowRes() const { return m_WindowRes; }
+	glm::ivec2 getWindowRes() const { return m_WindowRes; }
 	GLFWwindow* getGLFWwindow() const { return m_Window; }
 
 	inline bool wasWindowResized() const { return m_FramebufferResized; }
@@ -23,6 +23,6 @@ private:
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
 
 	GLFWwindow* m_Window;
-	glm::vec2 m_WindowRes;
+	glm::ivec2 m_WindowRes;
     bool m_FramebufferResized = false;
 };

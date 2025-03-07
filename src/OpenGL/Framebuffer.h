@@ -13,7 +13,6 @@ public:
 	   	const int width=800, height=600;
 		const GLenum textureFormat = GL_RGBA;
         const int chainDepth = 1;
-        const int mipSizeDownscale = 2;
 	};
 
     struct CreateInfo final

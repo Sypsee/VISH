@@ -1,7 +1,11 @@
 #include "Texture.h"
+
 #include <stb_image/stb_image.h>
+
+#include <future>
 #include <iostream>
 #include <array>
+#include <chrono>
 
 Texture::Texture(CreateInfo const& createInfo)
 {
@@ -48,8 +52,9 @@ Texture::Texture(CreateInfo const& createInfo)
 		glTextureParameteri(m_Handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		std::array<CubemapData, 6> cubemapData{};
+		auto start = std::chrono::high_resolution_clock::now();
 
-		for (int i = 0; i < 6; i++)
+		/*for (int i = 0; i < 6; i++)
 		{
 			std::string newPath = (createInfo.path.string().erase(createInfo.path.string().find(".", 0)) + std::to_string(i) + createInfo.path.extension().string());
 			cubemapData[i].data = stbi_load
@@ -60,7 +65,28 @@ Texture::Texture(CreateInfo const& createInfo)
 				&cubemapData[i].nrChannels,
 				0
 			);
+		}*/
+
+		static std::future<void> f1;
+
+		for (int i = 0; i < 6; i++)
+		{
+			f1 = std::async(std::launch::async, [createInfo, &cubemapData, i]() {
+				std::string newPath = (createInfo.path.string().erase(createInfo.path.string().find(".", 0)) + std::to_string(i) + createInfo.path.extension().string());
+				cubemapData[i].data = stbi_load
+				(
+					newPath.c_str(),
+					&cubemapData[i].width,
+					&cubemapData[i].height,
+					&cubemapData[i].nrChannels,
+					0
+				);
+			});
 		}
+
+		//f1.wait();
+
+		std::cout << std::chrono::high_resolution_clock::now() - start << "\n";
 
 		glTextureStorage2D(m_Handle, 1, GL_RGB16F, cubemapData[0].width, cubemapData[0].height);
 

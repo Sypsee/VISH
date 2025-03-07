@@ -52,7 +52,7 @@ void Composite::Draw(DrawInfo drawInfo)
 
 	if (drawInfo.lights.size() > 0)
 	{
-		m_Shader.setI("u_LightsSize", drawInfo.lights.size());
+		m_Shader.setI("u_LightsSize", static_cast<int>(drawInfo.lights.size()));
 		int i = 0;
 		for (const Light& light : drawInfo.lights)
 		{

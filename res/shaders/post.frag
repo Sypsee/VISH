@@ -39,7 +39,7 @@ void main()
 
 	vec3 viewDir = normalize(u_ViewPos - objPos);
     
-    vec3 color = albedo.xyz * 0.1;
+    vec3 color = albedo.xyz;
     for (int i = 0; i < u_LightsSize; i++)
     {
         vec3 lightDir = normalize(u_Lights[i].pos - fragPos);

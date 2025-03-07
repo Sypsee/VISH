@@ -12,7 +12,6 @@ Framebuffer::Framebuffer(CreateInfo const &createInfo)
 		currentSizeY = createInfo.attachements[i].height;
 		screenWidth = currentSizeX;
 		screenHeight = currentSizeY;
-		downScaleLevel = createInfo.attachements[i].mipSizeDownscale;
 		chainDepth = createInfo.attachements[i].chainDepth;
 
         if (GL_COLOR_ATTACHMENT0 <= createInfo.attachements[i].attachement && createInfo.attachements[i].attachement <= GL_COLOR_ATTACHMENT31)
@@ -78,6 +77,8 @@ void Framebuffer::createTextureChain(unsigned int &texId, const GLenum textureFo
 
     glTextureParameteri(texId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(texId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(texId, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texId, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTextureStorage2D(texId, chainDepth, textureFormat, currentSizeX, currentSizeY);
 

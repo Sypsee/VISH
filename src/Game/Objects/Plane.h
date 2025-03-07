@@ -12,8 +12,10 @@ class Plane
 public:
 	struct CreateInfo
 	{
-		const int resolution = 6;
-		const int width = 6;
+		const int resolution = 10;
+		const int width = 10;
+		bool customShader = false;
+		Shader&& shader{};
 		Texture&& texture{ {} };
 	};
 
