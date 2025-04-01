@@ -13,7 +13,7 @@ void main()
     vec3 albedo = vec3(0.1,0.15,1.0);
 
     vec3 norm = normalize(normal);
-    g_Normal = vec4(normal, 1.0);
+    g_Normal = vec4(norm, 1.0);
     g_Position = vec4(fragPos, 1.0);
 
     g_Albedo = vec4(albedo, 1.0);

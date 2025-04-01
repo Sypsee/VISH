@@ -254,7 +254,6 @@ void Model::Draw(DrawInfo drawInfo)
 	m_Shader.setMat4("proj", drawInfo.proj);
 	m_Shader.setMat4("view", drawInfo.view);
 
-	glm::mat4 model(1.0);
 	m_Shader.setVec3("viewPos", drawInfo.viewPos);
 
 	for (ModelMesh& m : m_Meshes)
@@ -266,7 +265,10 @@ void Model::Draw(DrawInfo drawInfo)
 			m_Shader.setI("u_Tex", 2);
 		}
 
-		m_Shader.setMat4("model", m.modelMatrix);
+		glm::mat4 model = m.modelMatrix;
+		model = glm::translate(model, glm::vec3(0, 3.5, 0));
+		model = glm::scale(model, glm::vec3(0.12, 0.12, 0.12));
+		m_Shader.setMat4("model", model);
 
 		m.mesh.Draw(m.indexCount);
 	}

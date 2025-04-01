@@ -34,7 +34,7 @@ private:
 	std::vector<Light> lights;
 	
 	Plane *plane;
-	//Model model{ "res/models/sponza/Sponza.gltf" };
+	Model model{ "res/models/duck/Duck.gltf" };
 
 	Framebuffer *m_FB;
 	

@@ -105,7 +105,7 @@ Application::Application()
 	m_GridComp = new Composite(std::move(gridShader));
 	cubemap = new Cube({ std::move(cubemapTex), true, std::move(cubemapShader) });
 	plane = new Plane{ { 8, 20, true, std::move(planeShader) } };
-	plane->transform.pos.y += 1;
+	plane->transform.pos.y += 2;
 }
 
 Application::~Application()
@@ -166,7 +166,7 @@ void Application::run()
 		// OBJECTS DRAW
 
 		plane->Draw({cam.getProjMatrix(), cam.getViewMatrix()});
-		//model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition() });
+		model.Draw({ cam.getProjMatrix(), cam.getViewMatrix(), cam.getPosition() });
 
 		// END
 

@@ -14,25 +14,47 @@ out vec3 normal;
 out vec2 uv;
 out vec3 fragPos;
 
-const float waveSpeed = 1.5;
+struct Wave 
+{
+    float waveSpeed;
+    float octaves;
+    float lacunarity;
+    float gain;
+    vec2 direction;
+};
+
+const int NUMBER_OF_WAVES = 5;
+Wave waves[NUMBER_OF_WAVES] = Wave[](
+    Wave(1.0, 5, 1.2, 0.15, vec2(1.0, 0.0)),
+    Wave(1.5, 3, 1.5, 0.1, vec2(1.0, 1.0)),
+    Wave(0.5, 2, 1.1, 0.05, vec2(0.0, 1.0)),
+    Wave(1.5, 4, 1.3, 0.1, vec2(0.5, 0.5)),
+    Wave(1.0, 5, 1.6, 0.02, vec2(-1.0, 0.0))
+);
 
 void main()
 {
-    normal = aNormal;
     vec3 position = aPosition;
 
-    float sumOfSines = 0;
-    float frequency = 1.0;
-    float amplitude = 0.8;
-    for (int i = 0; i < 5; i++)
+    float tempN = 0;
+    
+    for (int i=0; i < NUMBER_OF_WAVES; i++)
     {
-        sumOfSines += sin((position.x + position.z) * frequency + u_Time * waveSpeed) * amplitude;
-        frequency += frequency / 4;
-        amplitude -= amplitude / 2;
+        float frequency = 1.0;
+        float amplitude = 0.2;
+
+        for (int j = 0; j < waves[i].octaves; j++)
+        {
+            position.y += amplitude * sin(dot(vec2(position.x, position.z), waves[i].direction) * frequency + u_Time * waves[i].waveSpeed);
+            frequency *= waves[i].lacunarity;
+            amplitude *= waves[i].gain;
+
+            tempN += frequency * amplitude * cos(dot(vec2(position.x, position.z), waves[i].direction) * frequency + u_Time * waves[i].waveSpeed);
+        }
     }
 
-    position.y += sumOfSines;
-
+    normal = normalize(vec3(-tempN, -tempN, 1));
+    
     fragPos = vec3(model * vec4(position, 1.0));
     uv = aUV;
     gl_Position = proj * view * model * vec4(fragPos, 1.0);
